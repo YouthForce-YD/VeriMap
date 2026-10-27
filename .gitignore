@@ -1,0 +1,20 @@
+# Virtual Environment
+venv/
+env/
+
+# Environment Variables & Secrets (কখনোই GitHub-এ যাবে না)
+.env
+
+# Python Bytecode & Cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Local Database & Uploaded Media
+db.sqlite3
+media/
+staticfiles/
+
+# IDE Settings
+.vscode/
+.idea/

@@ -1,0 +1,85 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}CommunityBridge — Connecting Donors with Communities{% endblock %}</title>
+    <link rel="icon" type="image/png" href="{% static 'images/logo.png' %}">
+
+    <!-- Google Font: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+                    colors: {
+                        brand: { 50: '#eff6ff', 100: '#dbeafe', 600: '#2563eb', 700: '#1d4ed8', 900: '#0f172a' }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Alpine.js (Reactivity & Accessible Modals) -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        [x-cloak] { display: none !important; }
+        /* High-visibility focus ring for Keyboard & Screen Reader users */
+        *:focus-visible {
+            outline: 3px solid #2563EB !important;
+            outline-offset: 2px !important;
+        }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-slate-50 text-slate-900 font-sans antialiased min-h-screen flex flex-col">
+
+    <!-- Accessibility: Skip to Main Content Link for Screen Readers & Keyboard Users -->
+    <a href="#main-content" 
+       class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999] focus:bg-blue-700 focus:text-white focus:px-5 focus:py-3 focus:rounded-xl focus:font-bold focus:shadow-2xl">
+        Skip to main content
+    </a>
+
+    <!-- Accessibility: Screen Reader Live Region for Flash Messages -->
+    {% if messages %}
+    <div class="fixed top-5 right-5 z-50 space-y-3 max-w-md w-full px-4" role="status" aria-live="polite" aria-atomic="true">
+        {% for message in messages %}
+        <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)"
+             x-transition
+             class="flex items-center justify-between gap-3 p-4 rounded-xl shadow-lg border {% if message.tags == 'error' %}bg-red-50 border-red-300 text-red-900{% elif message.tags == 'warning' %}bg-amber-50 border-amber-300 text-amber-900{% else %}bg-emerald-50 border-emerald-300 text-emerald-900{% endif %}">
+            <div class="flex items-center gap-3 text-sm font-semibold">
+                <i data-lucide="{% if message.tags == 'error' %}alert-circle{% else %}check-circle-2{% endif %}" class="w-5 h-5 shrink-0" aria-hidden="true"></i>
+                <span>{{ message }}</span>
+            </div>
+            <button type="button" @click="show = false" aria-label="Dismiss notification" class="p-1 rounded-lg hover:bg-black/5">
+                <i data-lucide="x" class="w-4 h-4" aria-hidden="true"></i>
+            </button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% block body %}{% endblock %}
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

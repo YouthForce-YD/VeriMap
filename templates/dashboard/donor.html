@@ -1,0 +1,127 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% load humanize %}
+
+{% block title %}Donor Dashboard — CommunityBridge{% endblock %}
+{% block portal_label %}Donor Portal{% endblock %}
+{% block page_heading %}{% if tab == 'live' %}Live Verified Projects{% else %}My Funded Projects{% endif %}{% endblock %}
+{% block page_subtitle %}Browse verified community needs and track real-time field progress{% endblock %}
+
+{% block sidebar_nav %}
+<a href="?tab=live" class="flex items-center justify-between px-4 py-3 rounded-xl text-sm font-semibold transition {% if tab == 'live' %}bg-blue-600 text-white{% else %}text-slate-300 hover:bg-slate-800{% endif %}">
+    <span class="flex items-center gap-3"><i data-lucide="globe" class="w-4 h-4" aria-hidden="true"></i> Live Projects</span>
+    <span class="px-2 py-0.5 text-xs rounded-full bg-slate-950/40">{{ live_count }}</span>
+</a>
+<a href="?tab=current" class="flex items-center justify-between px-4 py-3 rounded-xl text-sm font-semibold transition {% if tab == 'current' %}bg-blue-600 text-white{% else %}text-slate-300 hover:bg-slate-800{% endif %}">
+    <span class="flex items-center gap-3"><i data-lucide="heart-handshake" class="w-4 h-4" aria-hidden="true"></i> My Donations</span>
+    <span class="px-2 py-0.5 text-xs rounded-full bg-slate-950/40">{{ current_count }}</span>
+</a>
+{% endblock %}
+
+{% block dashboard_content %}
+<div x-data="{ search: '' }">
+    <!-- Donor Stats -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-6">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <p class="text-xs font-semibold text-slate-500">Available Verified Projects</p>
+            <p class="text-2xl font-extrabold text-slate-900 mt-1">{{ live_count }}</p>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <p class="text-xs font-semibold text-blue-600">My Contributions</p>
+            <p class="text-2xl font-extrabold text-slate-900 mt-1">{{ current_count }}</p>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <p class="text-xs font-semibold text-emerald-600">Total Amount Donated</p>
+            <p class="text-2xl font-extrabold text-emerald-600 mt-1">৳ {{ total_paid|floatformat:2|intcomma }}</p>
+        </div>
+    </div>
+
+    {% if tab == 'live' %}
+    <!-- Accessible Live Filter Input -->
+    <div class="mb-6 max-w-md">
+        <label for="project_search" class="sr-only">Search projects by name, district, or upozilla</label>
+        <input type="search" id="project_search" x-model="search"
+               placeholder="Search by project name, district, or upozilla..."
+               class="w-full px-4 py-3 rounded-xl border border-slate-300 bg-white text-sm shadow-sm">
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        {% for d in live_demands %}
+        <article x-show="'{{ d.demand_name|lower }} {{ d.zilla|lower }} {{ d.upozilla|lower }}'.includes(search.toLowerCase())"
+                 class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm flex flex-col justify-between">
+            <div>
+                {% if d.problem_image %}
+                <img src="{{ d.problem_image.url }}" alt="Field photo for {{ d.demand_name }}" class="w-full h-44 object-cover rounded-xl mb-4">
+                {% endif %}
+                <div class="flex items-center justify-between mb-2">
+                    <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800">Verified</span>
+                    <span class="text-xs text-slate-400">{{ d.created_at|date:"d M Y" }}</span>
+                </div>
+                <h2 class="text-lg font-bold text-slate-900 mb-1">{{ d.demand_name }}</h2>
+                <p class="text-xs text-slate-500 mb-3">📍 {{ d.detail_location }}, {{ d.upozilla }}, {{ d.zilla }}</p>
+                <p class="text-sm text-slate-600 line-clamp-3 mb-4">{{ d.problem_detail }}</p>
+            </div>
+
+            <div>
+                <div class="mb-4 p-3 rounded-xl bg-slate-50 border border-slate-200">
+                    <div class="flex justify-between text-xs font-bold text-slate-700 mb-1">
+                        <span>Raised: ৳{{ d.collected_amount|floatformat:0|intcomma }}</span>
+                        <span>Need: ৳{{ d.remaining_amount|floatformat:0|intcomma }}</span>
+                    </div>
+                    <div class="w-full h-2.5 bg-slate-200 rounded-full overflow-hidden"
+                         role="progressbar" aria-label="Funding progress for {{ d.demand_name }}"
+                         aria-valuenow="{{ d.funding_percentage }}" aria-valuemin="0" aria-valuemax="100">
+                        <div class="h-full bg-gradient-to-r from-blue-600 to-emerald-500" style="width: {{ d.funding_percentage }}%"></div>
+                    </div>
+                </div>
+                <a href="{% url 'payment' d.id %}" class="w-full py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm flex items-center justify-center gap-2 transition">
+                    <i data-lucide="heart" class="w-4 h-4" aria-hidden="true"></i>
+                    <span>Donate Now (Full or Partial)</span>
+                </a>
+            </div>
+        </article>
+        {% empty %}
+        <div class="col-span-full bg-white rounded-2xl p-12 text-center border border-slate-200">
+            <p class="font-bold text-slate-700">No verified projects awaiting donations right now.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        {% for p in my_donations %}
+        <article class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+            <div class="flex items-center justify-between mb-3">
+                <span class="px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-800">Ref: {{ p.payment_gateway_ref }}</span>
+                <span class="text-xs text-slate-400">{{ p.paid_at|date:"d M Y" }}</span>
+            </div>
+            <h2 class="text-lg font-bold text-slate-900 mb-1">{{ p.demand.demand_name }}</h2>
+            <p class="text-xs text-slate-500 mb-3">{{ p.demand.upozilla }}, {{ p.demand.zilla }}</p>
+            <p class="text-xl font-extrabold text-emerald-600 mb-4">Donated: ৳{{ p.amount_paid|floatformat:2|intcomma }}</p>
+
+            <div class="mb-3">
+                <div class="flex justify-between text-xs font-bold text-slate-700 mb-1">
+                    <span>Field Implementation Progress</span>
+                    <span>{{ p.demand.progress.progress_percent|default:0 }}%</span>
+                </div>
+                <div class="w-full h-2.5 bg-slate-200 rounded-full overflow-hidden"
+                     role="progressbar" aria-label="Implementation progress for {{ p.demand.demand_name }}"
+                     aria-valuenow="{{ p.demand.progress.progress_percent|default:0 }}" aria-valuemin="0" aria-valuemax="100">
+                    <div class="h-full bg-gradient-to-r from-blue-600 to-emerald-500" style="width: {{ p.demand.progress.progress_percent|default:0 }}%"></div>
+                </div>
+            </div>
+
+            {% if p.demand.progress.proof_image %}
+            <a href="{{ p.demand.progress.proof_image.url }}" target="_blank" class="text-xs font-bold text-blue-600 hover:underline inline-flex items-center gap-1 mt-2">
+                <i data-lucide="image" class="w-4 h-4" aria-hidden="true"></i> View Milestone Photo Proof
+            </a>
+            {% endif %}
+        </article>
+        {% empty %}
+        <div class="col-span-full bg-white rounded-2xl p-12 text-center border border-slate-200">
+            <p class="font-bold text-slate-700">You have not made any donations yet.</p>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

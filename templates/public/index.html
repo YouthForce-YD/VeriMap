@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+{% load static humanize %}
+
+{% block body %}
+<!-- Accessible Public Header -->
+<header class="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-200">
+    <nav aria-label="Main Public Navigation" class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+        <a href="{% url 'home' %}" class="flex items-center gap-3">
+            <img src="{% static 'images/logo.png' %}" alt="CommunityBridge Official Logo"
+                 class="w-10 h-10 rounded-xl object-contain"
+                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+            <div style="display:none" class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-violet-600 text-white items-center justify-center font-extrabold" aria-hidden="true">CB</div>
+            <span class="text-xl font-extrabold tracking-tight text-slate-900">CommunityBridge</span>
+        </a>
+        <div class="flex items-center gap-3">
+            <a href="{% url 'login' %}" class="px-4 py-2 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-100 transition">Sign In</a>
+            <a href="{% url 'register' %}" class="px-5 py-2.5 rounded-xl text-sm font-bold bg-blue-600 text-white hover:bg-blue-700 shadow-md shadow-blue-600/20 transition">Register</a>
+        </div>
+    </nav>
+</header>
+
+<main id="main-content" tabindex="-1">
+    <!-- Hero Section with Decorative 3D Canvas hidden from Screen Readers -->
+    <section class="relative bg-slate-900 text-white py-24 px-6 overflow-hidden isolate" aria-labelledby="hero-heading">
+        <div id="three-hero-bg" class="absolute inset-0 -z-10 pointer-events-none" aria-hidden="true"></div>
+        <div class="max-w-3xl mx-auto text-center relative z-10">
+            <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-500/15 border border-blue-400/30 text-blue-300 text-xs font-semibold mb-6">
+                <i data-lucide="shield-check" class="w-4 h-4" aria-hidden="true"></i>
+                Serving Communities Across All 64 Districts of Bangladesh
+            </span>
+            <h1 id="hero-heading" class="text-4xl sm:text-6xl font-extrabold tracking-tight leading-tight mb-6">
+                Bridging Donors with <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-violet-400">Community Needs</span>
+            </h1>
+            <p class="text-lg text-slate-300 leading-relaxed mb-10">
+                A transparent platform connecting generous donors with admin-verified community projects across all 64 districts and 500+ upozillas of Bangladesh.
+            </p>
+            <div class="flex flex-wrap justify-center gap-4">
+                <a href="{% url 'register' %}?type=donor" class="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 text-white font-bold shadow-lg shadow-blue-600/30 hover:-translate-y-0.5 transition">
+                    <i data-lucide="heart-handshake" class="w-5 h-5" aria-hidden="true"></i>
+                    <span>I Want to Donate</span>
+                </a>
+                <a href="{% url 'register' %}?type=receiver" class="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-white/10 border border-white/20 text-white font-bold hover:bg-white/20 transition">
+                    <i data-lucide="file-plus-2" class="w-5 h-5" aria-hidden="true"></i>
+                    <span>Submit a Project</span>
+                </a>
+            </div>
+
+            <!-- Live Platform Statistics -->
+            <dl class="grid grid-cols-3 gap-6 max-w-lg mx-auto mt-14 pt-8 border-t border-white/10">
+                <div>
+                    <dt class="text-xs text-slate-400">Live Verified Projects</dt>
+                    <dd class="text-3xl font-extrabold text-blue-400 mt-1">{{ total_demands }}</dd>
+                </div>
+                <div>
+                    <dt class="text-xs text-slate-400">Registered Donors</dt>
+                    <dd class="text-3xl font-extrabold text-emerald-400 mt-1">{{ total_donors }}+</dd>
+                </div>
+                <div>
+                    <dt class="text-xs text-slate-400">Projects Funded</dt>
+                    <dd class="text-3xl font-extrabold text-violet-400 mt-1">{{ total_paid }}</dd>
+                </div>
+            </dl>
+        </div>
+    </section>
+
+    <!-- Public Showcase of Verified Projects -->
+    <section class="py-20 px-6 max-w-7xl mx-auto" aria-labelledby="live-projects-heading">
+        <div class="text-center max-w-2xl mx-auto mb-12">
+            <h2 id="live-projects-heading" class="text-3xl font-extrabold text-slate-900">Live Verified Community Projects</h2>
+            <p class="text-slate-600 mt-2">Every project below has been reviewed and verified by our administration team.</p>
+        </div>
+
+        {% if live_projects %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for p in live_projects %}
+            <article class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition p-6 flex flex-col justify-between">
+                <div>
+                    {% if p.problem_image %}
+                    <img src="{{ p.problem_image.url }}" alt="Field photo for {{ p.demand_name }}" class="w-full h-44 object-cover rounded-xl mb-4">
+                    {% endif %}
+                    <div class="flex items-center justify-between gap-2 mb-3">
+                        <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                            <i data-lucide="badge-check" class="w-3.5 h-3.5" aria-hidden="true"></i> Verified
+                        </span>
+                        <time datetime="{{ p.created_at|date:'Y-m-d' }}" class="text-xs text-slate-500">{{ p.created_at|date:"d M Y" }}</time>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-900 mb-1">{{ p.demand_name }}</h3>
+                    <p class="text-xs text-slate-500 flex items-center gap-1 mb-4">
+                        <i data-lucide="map-pin" class="w-3.5 h-3.5 text-blue-600" aria-hidden="true"></i>
+                        <span>{{ p.upozilla }}, {{ p.zilla }}</span>
+                    </p>
+                    <p class="text-sm text-slate-600 line-clamp-2 mb-4">{{ p.problem_detail }}</p>
+                </div>
+
+                <div>
+                    <div class="mb-4">
+                        <div class="flex justify-between text-xs font-semibold text-slate-600 mb-1">
+                            <span>Raised: ৳{{ p.collected_amount|floatformat:0|intcomma }}</span>
+                            <span>Goal: ৳{{ p.donor_amount|floatformat:0|intcomma }}</span>
+                        </div>
+                        <div class="w-full h-2.5 bg-slate-200 rounded-full overflow-hidden"
+                             role="progressbar" aria-label="Funding progress for {{ p.demand_name }}"
+                             aria-valuenow="{{ p.funding_percentage }}" aria-valuemin="0" aria-valuemax="100">
+                            <div class="h-full bg-gradient-to-r from-blue-600 to-emerald-500 rounded-full" style="width: {{ p.funding_percentage }}%"></div>
+                        </div>
+                    </div>
+                    <a href="{% url 'login' %}" class="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm transition">
+                        <i data-lucide="heart" class="w-4 h-4" aria-hidden="true"></i>
+                        <span>Donate to Project</span>
+                    </a>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center bg-white border-2 border-dashed border-slate-200 rounded-2xl p-12">
+            <p class="text-slate-600 font-semibold">No live projects waiting for funding right now. Register as a Receiver to submit a community project!</p>
+        </div>
+        {% endif %}
+    </section>
+</main>
+
+<footer class="bg-slate-900 text-slate-400 text-center py-8 text-sm mt-auto">
+    <p>© 2026 CommunityBridge — Connecting Bangladesh's Communities</p>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function () {
+    const container = document.getElementById('three-hero-bg');
+    if (!container || typeof THREE === 'undefined') return;
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 1000);
+    camera.position.z = 75;
+    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    container.appendChild(renderer.domElement);
+    const group = new THREE.Group();
+    scene.add(group);
+    const geo = new THREE.BufferGeometry();
+    const pts = new Float32Array(130 * 3);
+    for (let i = 0; i < 130; i++) {
+        const theta = Math.random() * Math.PI * 2, phi = Math.acos((Math.random() * 2) - 1), r = 42;
+        pts[i*3] = r * Math.sin(phi) * Math.cos(theta);
+        pts[i*3+1] = r * Math.sin(phi) * Math.sin(theta);
+        pts[i*3+2] = r * Math.cos(phi);
+    }
+    geo.setAttribute('position', new THREE.BufferAttribute(pts, 3));
+    group.add(new THREE.Points(geo, new THREE.PointsMaterial({ color: '#60A5FA', size: 1.5 })));
+    function animate() {
+        requestAnimationFrame(animate);
+        group.rotation.y += 0.0018;
+        renderer.render(scene, camera);
+    }
+    animate();
+})();
+</script>
+{% endblock %}

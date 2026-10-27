@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Sign In — CommunityBridge{% endblock %}
+
+{% block body %}
+<main id="main-content" tabindex="-1" class="min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 flex items-center justify-center p-6">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 sm:p-10">
+        <div class="text-center mb-8">
+            <img src="{% static 'images/logo.png' %}" alt="CommunityBridge Official Logo"
+                 class="w-14 h-14 mx-auto mb-3 rounded-2xl object-contain"
+                 onerror="this.style.display='none'">
+            <h1 class="text-2xl font-extrabold text-slate-900">Welcome Back</h1>
+            <p class="text-sm text-slate-500 mt-1">Sign in as a Donor, Receiver, or Administrator</p>
+        </div>
+
+        <form method="POST" class="space-y-5">
+            {% csrf_token %}
+            <div>
+                <label for="login_input" class="block text-sm font-semibold text-slate-700 mb-1.5">
+                    Email Address or Admin Username <span class="text-red-600" aria-hidden="true">*</span>
+                </label>
+                <input type="text" id="login_input" name="login_input" required autocomplete="username"
+                       placeholder="your@email.com"
+                       class="w-full px-4 py-3 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white text-sm">
+            </div>
+
+            <div>
+                <label for="password" class="block text-sm font-semibold text-slate-700 mb-1.5">
+                    Password <span class="text-red-600" aria-hidden="true">*</span>
+                </label>
+                <input type="password" id="password" name="password" required autocomplete="current-password"
+                       placeholder="Enter your password"
+                       class="w-full px-4 py-3 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white text-sm">
+            </div>
+
+            <button type="submit" class="w-full py-3.5 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-lg shadow-blue-600/25 transition flex items-center justify-center gap-2">
+                <i data-lucide="log-in" class="w-4 h-4" aria-hidden="true"></i>
+                <span>Sign In to Account</span>
+            </button>
+        </form>
+
+        <div class="mt-6 pt-6 border-t border-slate-200 text-center space-y-2">
+            <p class="text-sm text-slate-600">
+                Don't have an account? <a href="{% url 'register' %}" class="text-blue-600 font-bold hover:underline">Create an account</a>
+            </p>
+            <p>
+                <a href="{% url 'home' %}" class="text-xs text-slate-500 hover:text-slate-800 inline-flex items-center gap-1">
+                    <i data-lucide="arrow-left" class="w-3.5 h-3.5" aria-hidden="true"></i> Back to Homepage
+                </a>
+            </p>
+        </div>
+    </div>
+</main>
+{% endblock %}

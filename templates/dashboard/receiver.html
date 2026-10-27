@@ -1,0 +1,193 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% load humanize %}
+
+{% block title %}Receiver Dashboard — CommunityBridge{% endblock %}
+{% block portal_label %}Receiver Portal{% endblock %}
+{% block page_heading %}{% if tab == 'new' %}My Project Demands{% else %}Funded & Completed Projects{% endif %}{% endblock %}
+{% block page_subtitle %}Submit and manage your community project funding requests{% endblock %}
+
+{% block sidebar_nav %}
+<a href="?tab=new" class="flex items-center justify-between px-4 py-3 rounded-xl text-sm font-semibold transition {% if tab == 'new' %}bg-blue-600 text-white{% else %}text-slate-300 hover:bg-slate-800{% endif %}">
+    <span class="flex items-center gap-3"><i data-lucide="clipboard-list" class="w-4 h-4" aria-hidden="true"></i> My Demands</span>
+    <span class="px-2 py-0.5 text-xs rounded-full bg-slate-950/40">{{ total_demands }}</span>
+</a>
+<a href="?tab=completed" class="flex items-center justify-between px-4 py-3 rounded-xl text-sm font-semibold transition {% if tab == 'completed' %}bg-blue-600 text-white{% else %}text-slate-300 hover:bg-slate-800{% endif %}">
+    <span class="flex items-center gap-3"><i data-lucide="award" class="w-4 h-4" aria-hidden="true"></i> Funded & Completed</span>
+    <span class="px-2 py-0.5 text-xs rounded-full bg-slate-950/40">{{ completed_count }}</span>
+</a>
+{% endblock %}
+
+{% block dashboard_content %}
+<div x-data="{ modalOpen: false, budget: 0 }">
+
+    <!-- Top Action Bar -->
+    <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 w-full lg:w-auto flex-1">
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                <p class="text-xs font-semibold text-slate-500">Total Submitted</p>
+                <p class="text-2xl font-extrabold text-slate-900 mt-1">{{ total_demands }}</p>
+            </div>
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                <p class="text-xs font-semibold text-amber-600">Pending Admin Review</p>
+                <p class="text-2xl font-extrabold text-slate-900 mt-1">{{ pending_count }}</p>
+            </div>
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                <p class="text-xs font-semibold text-emerald-600">Verified & Live</p>
+                <p class="text-2xl font-extrabold text-slate-900 mt-1">{{ verified_count }}</p>
+            </div>
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                <p class="text-xs font-semibold text-violet-600">Funded / Completed</p>
+                <p class="text-2xl font-extrabold text-slate-900 mt-1">{{ completed_count }}</p>
+            </div>
+        </div>
+
+        <button type="button" @click="modalOpen = true"
+                class="px-6 py-4 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-lg shadow-blue-600/25 flex items-center gap-2 transition">
+            <i data-lucide="plus-circle" class="w-5 h-5" aria-hidden="true"></i>
+            <span>Submit New Demand</span>
+        </button>
+    </div>
+
+    <!-- Demands Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        {% for d in my_demands %}
+        <article class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm flex flex-col justify-between">
+            <div>
+                {% if d.problem_image %}
+                <img src="{{ d.problem_image.url }}" alt="Submitted photo for {{ d.demand_name }}" class="w-full h-44 object-cover rounded-xl mb-4">
+                {% endif %}
+                <div class="flex items-start justify-between gap-2 mb-2">
+                    <h2 class="text-lg font-bold text-slate-900">{{ d.demand_name }}</h2>
+                    <span class="px-3 py-1 rounded-full text-xs font-bold capitalize
+                        {% if d.status == 'verified' %}bg-emerald-50 text-emerald-800{% elif d.status == 'pending' %}bg-amber-50 text-amber-800{% elif d.status == 'canceled' %}bg-red-50 text-red-800{% else %}bg-blue-50 text-blue-800{% endif %}">
+                        {{ d.status }}
+                    </span>
+                </div>
+                <p class="text-xs text-slate-500 mb-3">{{ d.detail_location }}, {{ d.upozilla }}, {{ d.zilla }}</p>
+                <p class="text-xl font-extrabold text-blue-600 mb-3">৳ {{ d.requested_amount|floatformat:2|intcomma }}</p>
+                <p class="text-sm text-slate-600 line-clamp-3 mb-4">{{ d.problem_detail }}</p>
+            </div>
+
+            <div class="pt-4 border-t border-slate-100">
+                <div class="flex justify-between text-xs font-bold text-slate-600 mb-1">
+                    <span>Implementation Progress</span>
+                    <span>{{ d.progress.progress_percent|default:0 }}%</span>
+                </div>
+                <div class="w-full h-2.5 bg-slate-200 rounded-full overflow-hidden"
+                     role="progressbar" aria-label="Work progress for {{ d.demand_name }}"
+                     aria-valuenow="{{ d.progress.progress_percent|default:0 }}" aria-valuemin="0" aria-valuemax="100">
+                    <div class="h-full bg-gradient-to-r from-blue-600 to-emerald-500" style="width: {{ d.progress.progress_percent|default:0 }}%"></div>
+                </div>
+            </div>
+        </article>
+        {% empty %}
+        <div class="col-span-full bg-white rounded-2xl border-2 border-dashed border-slate-200 p-12 text-center">
+            <p class="text-lg font-bold text-slate-700">No project demands submitted yet</p>
+            <p class="text-sm text-slate-500 mt-1 mb-4">Click the button above to submit your first community project request.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Accessible New Demand Modal -->
+    <div x-show="modalOpen" x-cloak
+         role="dialog" aria-modal="true" aria-labelledby="modal-demand-title"
+         @keydown.escape.window="modalOpen = false"
+         class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+        <div @click.away="modalOpen = false" class="bg-white rounded-3xl shadow-2xl w-full max-w-xl max-h-[90vh] overflow-y-auto p-6 sm:p-8">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-200 mb-5">
+                <h2 id="modal-demand-title" class="text-xl font-extrabold text-slate-900">Submit New Community Demand</h2>
+                <button type="button" @click="modalOpen = false" aria-label="Close modal" class="p-2 rounded-full hover:bg-slate-100">
+                    <i data-lucide="x" class="w-5 h-5" aria-hidden="true"></i>
+                </button>
+            </div>
+
+            <form method="POST" enctype="multipart/form-data" class="space-y-4">
+                {% csrf_token %}
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="zillaSelect" class="block text-xs font-bold text-slate-700 mb-1">District (Zilla) *</label>
+                        <select id="zillaSelect" name="zilla_name" required onchange="fetchUpozillas(this.value)"
+                                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm">
+                            <option value="">-- Select District --</option>
+                            {% for div, districts in by_division.items %}
+                            <optgroup label="{{ div }} Division">
+                                {% for dist in districts %}<option value="{{ dist }}">{{ dist }}</option>{% endfor %}
+                            </optgroup>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label for="upozillaSelect" class="block text-xs font-bold text-slate-700 mb-1">Upozilla *</label>
+                        <select id="upozillaSelect" name="upozilla" required
+                                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm">
+                            <option value="">-- Select District First --</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label for="detail_loc" class="block text-xs font-bold text-slate-700 mb-1">Detailed Location (Village, Ward, Road) *</label>
+                    <input type="text" id="detail_loc" name="detail_location" required placeholder="e.g. Ward 09, Municipality Road"
+                           class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="demand_name" class="block text-xs font-bold text-slate-700 mb-1">Project Name *</label>
+                        <input type="text" id="demand_name" name="demand_name" required placeholder="e.g. Clean Water Tube-Well"
+                               class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm">
+                    </div>
+                    <div>
+                        <label for="contact_no" class="block text-xs font-bold text-slate-700 mb-1">Contact Number *</label>
+                        <input type="tel" id="contact_no" name="contact_no" value="{{ request.user.phone_number }}" required
+                               class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="amount_input" class="block text-xs font-bold text-slate-700 mb-1">Required Budget (BDT) *</label>
+                        <input type="number" id="amount_input" name="amount" x-model.number="budget" min="1000" required
+                               class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm">
+                        <p class="text-xs text-slate-500 mt-1" aria-live="polite">
+                            Donor Goal (+10% service fee): <strong class="text-blue-600">৳ <span x-text="(budget * 1.10).toFixed(2)"></span></strong>
+                        </p>
+                    </div>
+                    <div>
+                        <label for="problem_image" class="block text-xs font-bold text-slate-700 mb-1">Field Photo Proof</label>
+                        <input type="file" id="problem_image" name="problem_image" accept="image/*"
+                               class="w-full text-xs text-slate-600 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-blue-50 file:text-blue-700 file:font-semibold">
+                    </div>
+                </div>
+
+                <div>
+                    <label for="problem_detail" class="block text-xs font-bold text-slate-700 mb-1">Problem Description & Impact *</label>
+                    <textarea id="problem_detail" name="problem_detail" rows="4" required
+                              placeholder="Describe the community problem and how this budget will solve it..."
+                              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm"></textarea>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-4 border-t border-slate-200">
+                    <button type="button" @click="modalOpen = false" class="px-5 py-2.5 rounded-xl bg-slate-100 text-slate-700 text-sm font-semibold">Cancel</button>
+                    <button type="submit" class="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold">Submit Demand</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function fetchUpozillas(district) {
+    const sel = document.getElementById('upozillaSelect');
+    sel.innerHTML = '<option value="">Loading upozillas...</option>';
+    fetch('/api/upozillas/?district=' + encodeURIComponent(district))
+        .then(r => r.json())
+        .then(data => {
+            sel.innerHTML = '<option value="">-- Select Upozilla --</option>';
+            data.forEach(u => {
+                sel.innerHTML += `<option value="${u.name}">${u.name}</option>`;
+            });
+        });
+}
+</script>
+{% endblock %}
