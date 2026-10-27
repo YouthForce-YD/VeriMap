@@ -4,23 +4,43 @@
 
 {% block body %}
 <main id="main-content" tabindex="-1" class="min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 flex items-center justify-center p-6">
-    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 sm:p-10">
-        <div class="text-center mb-8">
+    <div x-data="{ tab: '{{ login_tab|default:"user" }}' }" class="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 sm:p-10">
+        <div class="text-center mb-6">
             <img src="{% static 'images/logo.png' %}" alt="CommunityBridge Official Logo"
                  class="w-14 h-14 mx-auto mb-3 rounded-2xl object-contain"
                  onerror="this.style.display='none'">
             <h1 class="text-2xl font-extrabold text-slate-900">Welcome Back</h1>
-            <p class="text-sm text-slate-500 mt-1">Sign in as a Donor, Receiver, or Administrator</p>
+            <p class="text-sm text-slate-500 mt-1" x-text="tab === 'admin' ? 'Administrator Authentication Portal' : 'Sign in as a Donor or Receiver'"></p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 p-1.5 bg-slate-100 rounded-2xl mb-6" role="tablist" aria-label="Sign In Type">
+            <button type="button" @click="tab = 'user'"
+                    role="tab" :aria-selected="tab === 'user'"
+                    :class="tab === 'user' ? 'bg-white text-blue-600 shadow-sm font-bold' : 'text-slate-600 font-medium'"
+                    class="py-2.5 px-4 rounded-xl text-sm transition flex items-center justify-center gap-2">
+                <i data-lucide="user" class="w-4 h-4" aria-hidden="true"></i>
+                <span>Donor / Receiver</span>
+            </button>
+            <button type="button" @click="tab = 'admin'"
+                    role="tab" :aria-selected="tab === 'admin'"
+                    :class="tab === 'admin' ? 'bg-white text-blue-600 shadow-sm font-bold' : 'text-slate-600 font-medium'"
+                    class="py-2.5 px-4 rounded-xl text-sm transition flex items-center justify-center gap-2">
+                <i data-lucide="shield" class="w-4 h-4" aria-hidden="true"></i>
+                <span>Admin Login</span>
+            </button>
         </div>
 
         <form method="POST" class="space-y-5">
             {% csrf_token %}
+            <input type="hidden" name="login_tab" :value="tab">
+
             <div>
                 <label for="login_input" class="block text-sm font-semibold text-slate-700 mb-1.5">
-                    Email Address or Admin Username <span class="text-red-600" aria-hidden="true">*</span>
+                    <span x-text="tab === 'admin' ? 'Admin Email or Username' : 'Email Address or Username'"></span>
+                    <span class="text-red-600" aria-hidden="true">*</span>
                 </label>
-                <input type="text" id="login_input" name="login_input" required autocomplete="username"
-                       placeholder="your@email.com"
+                <input type="text" id="login_input" name="login_input" value="{{ login_input|default:'' }}" required autocomplete="username"
+                       :placeholder="tab === 'admin' ? 'admin@communitybridge.org' : 'your@email.com'"
                        class="w-full px-4 py-3 rounded-xl border border-slate-300 bg-slate-50 focus:bg-white text-sm">
             </div>
 
@@ -35,12 +55,12 @@
 
             <button type="submit" class="w-full py-3.5 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-lg shadow-blue-600/25 transition flex items-center justify-center gap-2">
                 <i data-lucide="log-in" class="w-4 h-4" aria-hidden="true"></i>
-                <span>Sign In to Account</span>
+                <span x-text="tab === 'admin' ? 'Sign In as Administrator' : 'Sign In to Account'"></span>
             </button>
         </form>
 
         <div class="mt-6 pt-6 border-t border-slate-200 text-center space-y-2">
-            <p class="text-sm text-slate-600">
+            <p class="text-sm text-slate-600" x-show="tab === 'user'">
                 Don't have an account? <a href="{% url 'register' %}" class="text-blue-600 font-bold hover:underline">Create an account</a>
             </p>
             <p>

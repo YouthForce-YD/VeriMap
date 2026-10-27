@@ -2,10 +2,6 @@ from django.contrib.auth.models import AbstractUser
 from django.core.validators import RegexValidator
 from django.db import models
 
-# Create your models here.
-
-# bd phone number validator
-
 bd_phone_validator = RegexValidator(
     regex=r'^01[3-9]\d{8}$',
     message="Enter a valid Bangladeshi phone number (like: 017XXXXXXXX) ."
@@ -31,6 +27,19 @@ class User(AbstractUser):
     created_at = models.DateTimeField(auto_now_add=True)
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username', 'name']
+
+    @property
+    def phone(self):
+        return self.phone_number
+
+    @phone.setter
+    def phone(self, value):
+        self.phone_number = value
+
+    def save(self, *args, **kwargs):
+        if self.is_superuser:
+            self.user_type = 'admin'
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.name} ({self.get_user_type_display()})"

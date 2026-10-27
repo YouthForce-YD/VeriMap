@@ -18,9 +18,8 @@
 {% endblock %}
 
 {% block dashboard_content %}
-<div x-data="{ modalOpen: false, budget: 0 }">
+<div x-data="{ modalOpen: {% if modal_open %}true{% else %}false{% endif %}, budget: {{ form_data.amount|default:0 }} }">
 
-    <!-- Top Action Bar -->
     <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 w-full lg:w-auto flex-1">
             <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
@@ -48,7 +47,6 @@
         </button>
     </div>
 
-    <!-- Demands Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         {% for d in my_demands %}
         <article class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm flex flex-col justify-between">
@@ -88,7 +86,6 @@
         {% endfor %}
     </div>
 
-    <!-- Accessible New Demand Modal -->
     <div x-show="modalOpen" x-cloak
          role="dialog" aria-modal="true" aria-labelledby="modal-demand-title"
          @keydown.escape.window="modalOpen = false"
@@ -101,70 +98,145 @@
                 </button>
             </div>
 
+            {% if errors %}
+            <div role="alert" aria-live="assertive" class="p-4 rounded-xl bg-red-50 border border-red-300 text-red-900 mb-4">
+                <div class="flex items-center gap-2 font-bold text-sm mb-1 text-red-800">
+                    <i data-lucide="alert-octagon" class="w-4 h-4 shrink-0" aria-hidden="true"></i>
+                    <span>Please correct the errors below:</span>
+                </div>
+                <ul class="list-disc list-inside text-xs space-y-1 text-red-700">
+                    {% for field, error in errors.items %}
+                    <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
             <form method="POST" enctype="multipart/form-data" class="space-y-4">
                 {% csrf_token %}
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                        <label for="zillaSelect" class="block text-xs font-bold text-slate-700 mb-1">District (Zilla) *</label>
+                        <label for="zillaSelect" class="block text-xs font-bold text-slate-700 mb-1">
+                            District (Zilla) <span class="text-red-600" aria-hidden="true">*</span>
+                        </label>
                         <select id="zillaSelect" name="zilla_name" required onchange="fetchUpozillas(this.value)"
-                                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm">
+                                {% if errors.zilla_name %}aria-invalid="true" aria-describedby="zilla_error"{% endif %}
+                                class="w-full px-3.5 py-2.5 rounded-xl border {% if errors.zilla_name %}border-red-500 bg-red-50/30{% else %}border-slate-300{% endif %} text-sm">
                             <option value="">-- Select District --</option>
                             {% for div, districts in by_division.items %}
                             <optgroup label="{{ div }} Division">
-                                {% for dist in districts %}<option value="{{ dist }}">{{ dist }}</option>{% endfor %}
+                                {% for dist in districts %}
+                                <option value="{{ dist }}" {% if form_data.zilla_name == dist %}selected{% endif %}>{{ dist }}</option>
+                                {% endfor %}
                             </optgroup>
                             {% endfor %}
                         </select>
+                        {% if errors.zilla_name %}
+                        <p id="zilla_error" class="text-xs text-red-600 font-semibold mt-1">{{ errors.zilla_name }}</p>
+                        {% endif %}
                     </div>
                     <div>
-                        <label for="upozillaSelect" class="block text-xs font-bold text-slate-700 mb-1">Upozilla *</label>
+                        <label for="upozillaSelect" class="block text-xs font-bold text-slate-700 mb-1">
+                            Upozilla <span class="text-red-600" aria-hidden="true">*</span>
+                        </label>
                         <select id="upozillaSelect" name="upozilla" required
-                                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm">
+                                {% if errors.upozilla %}aria-invalid="true" aria-describedby="upozilla_error"{% endif %}
+                                class="w-full px-3.5 py-2.5 rounded-xl border {% if errors.upozilla %}border-red-500 bg-red-50/30{% else %}border-slate-300{% endif %} text-sm">
                             <option value="">-- Select District First --</option>
+                            {% if form_data.upozilla %}
+                            <option value="{{ form_data.upozilla }}" selected>{{ form_data.upozilla }}</option>
+                            {% endif %}
                         </select>
+                        {% if errors.upozilla %}
+                        <p id="upozilla_error" class="text-xs text-red-600 font-semibold mt-1">{{ errors.upozilla }}</p>
+                        {% endif %}
                     </div>
                 </div>
 
                 <div>
-                    <label for="detail_loc" class="block text-xs font-bold text-slate-700 mb-1">Detailed Location (Village, Ward, Road) *</label>
-                    <input type="text" id="detail_loc" name="detail_location" required placeholder="e.g. Ward 09, Municipality Road"
-                           class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm">
+                    <label for="detail_loc" class="block text-xs font-bold text-slate-700 mb-1">
+                        Detailed Location (Village, Ward, Road) <span class="text-red-600" aria-hidden="true">*</span>
+                    </label>
+                    <input type="text" id="detail_loc" name="detail_location" value="{{ form_data.detail_location|default:'' }}" required placeholder="e.g. Ward 09, Municipality Road"
+                           {% if errors.detail_location %}aria-invalid="true" aria-describedby="detail_loc_error"{% endif %}
+                           class="w-full px-3.5 py-2.5 rounded-xl border {% if errors.detail_location %}border-red-500 bg-red-50/30{% else %}border-slate-300{% endif %} text-sm">
+                    {% if errors.detail_location %}
+                    <p id="detail_loc_error" class="text-xs text-red-600 font-semibold mt-1">{{ errors.detail_location }}</p>
+                    {% endif %}
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                        <label for="demand_name" class="block text-xs font-bold text-slate-700 mb-1">Project Name *</label>
-                        <input type="text" id="demand_name" name="demand_name" required placeholder="e.g. Clean Water Tube-Well"
-                               class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm">
+                        <label for="demand_name" class="block text-xs font-bold text-slate-700 mb-1">
+                            Project Name <span class="text-red-600" aria-hidden="true">*</span>
+                        </label>
+                        <input type="text" id="demand_name" name="demand_name" value="{{ form_data.demand_name|default:'' }}" required placeholder="e.g. Clean Water Tube-Well"
+                               {% if errors.demand_name %}aria-invalid="true" aria-describedby="demand_name_error"{% endif %}
+                               class="w-full px-3.5 py-2.5 rounded-xl border {% if errors.demand_name %}border-red-500 bg-red-50/30{% else %}border-slate-300{% endif %} text-sm">
+                        {% if errors.demand_name %}
+                        <p id="demand_name_error" class="text-xs text-red-600 font-semibold mt-1">{{ errors.demand_name }}</p>
+                        {% endif %}
                     </div>
                     <div>
-                        <label for="contact_no" class="block text-xs font-bold text-slate-700 mb-1">Contact Number *</label>
-                        <input type="tel" id="contact_no" name="contact_no" value="{{ request.user.phone_number }}" required
-                               class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm">
+                        <label for="contact_no" class="block text-xs font-bold text-slate-700 mb-1">
+                            Contact Number <span class="text-red-600" aria-hidden="true">*</span>
+                        </label>
+                        <input type="tel" id="contact_no" name="contact_no" value="{{ form_data.contact_no|default:request.user.phone_number }}" required
+                               {% if errors.contact_no %}aria-invalid="true" aria-describedby="contact_no_error"{% endif %}
+                               class="w-full px-3.5 py-2.5 rounded-xl border {% if errors.contact_no %}border-red-500 bg-red-50/30{% else %}border-slate-300{% endif %} text-sm">
+                        {% if errors.contact_no %}
+                        <p id="contact_no_error" class="text-xs text-red-600 font-semibold mt-1">{{ errors.contact_no }}</p>
+                        {% endif %}
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                        <label for="amount_input" class="block text-xs font-bold text-slate-700 mb-1">Required Budget (BDT) *</label>
-                        <input type="number" id="amount_input" name="amount" x-model.number="budget" min="1000" required
-                               class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm">
+                        <label for="amount_input" class="block text-xs font-bold text-slate-700 mb-1">
+                            Required Budget (BDT) <span class="text-red-600" aria-hidden="true">*</span>
+                        </label>
+                        <input type="number" id="amount_input" name="amount" x-model.number="budget" min="1000" max="50000000" step="0.01" required
+                               {% if errors.amount %}aria-invalid="true" aria-describedby="amount_error"{% endif %}
+                               class="w-full px-3.5 py-2.5 rounded-xl border {% if errors.amount %}border-red-500 bg-red-50/30{% else %}border-slate-300{% endif %} text-sm">
                         <p class="text-xs text-slate-500 mt-1" aria-live="polite">
                             Donor Goal (+10% service fee): <strong class="text-blue-600">৳ <span x-text="(budget * 1.10).toFixed(2)"></span></strong>
                         </p>
+                        {% if errors.amount %}
+                        <p id="amount_error" class="text-xs text-red-600 font-semibold mt-1">{{ errors.amount }}</p>
+                        {% endif %}
                     </div>
                     <div>
-                        <label for="problem_image" class="block text-xs font-bold text-slate-700 mb-1">Field Photo Proof</label>
-                        <input type="file" id="problem_image" name="problem_image" accept="image/*"
+                        <label for="problem_image" class="block text-xs font-bold text-slate-700 mb-1">Field Photo Proof (JPG, PNG, WEBP — Max 5MB)</label>
+                        <input type="file" id="problem_image" name="problem_image" accept=".jpg,.jpeg,.png,.webp"
+                               {% if errors.problem_image %}aria-invalid="true" aria-describedby="problem_img_error"{% endif %}
                                class="w-full text-xs text-slate-600 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-blue-50 file:text-blue-700 file:font-semibold">
+                        {% if errors.problem_image %}
+                        <p id="problem_img_error" class="text-xs text-red-600 font-semibold mt-1">{{ errors.problem_image }}</p>
+                        {% endif %}
                     </div>
                 </div>
 
                 <div>
-                    <label for="problem_detail" class="block text-xs font-bold text-slate-700 mb-1">Problem Description & Impact *</label>
+                    <label for="supporting_doc" class="block text-xs font-bold text-slate-700 mb-1">Supporting Document (PDF, JPG, PNG — Max 5MB)</label>
+                    <input type="file" id="supporting_doc" name="supporting_document" accept=".pdf,.jpg,.jpeg,.png"
+                           {% if errors.supporting_document %}aria-invalid="true" aria-describedby="supporting_doc_error"{% endif %}
+                           class="w-full text-xs text-slate-600 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-blue-50 file:text-blue-700 file:font-semibold">
+                    {% if errors.supporting_document %}
+                    <p id="supporting_doc_error" class="text-xs text-red-600 font-semibold mt-1">{{ errors.supporting_document }}</p>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label for="problem_detail" class="block text-xs font-bold text-slate-700 mb-1">
+                        Problem Description & Impact <span class="text-red-600" aria-hidden="true">*</span>
+                    </label>
                     <textarea id="problem_detail" name="problem_detail" rows="4" required
+                              {% if errors.problem_detail %}aria-invalid="true" aria-describedby="problem_detail_error"{% endif %}
                               placeholder="Describe the community problem and how this budget will solve it..."
-                              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm"></textarea>
+                              class="w-full px-3.5 py-2.5 rounded-xl border {% if errors.problem_detail %}border-red-500 bg-red-50/30{% else %}border-slate-300{% endif %} text-sm">{{ form_data.problem_detail|default:'' }}</textarea>
+                    {% if errors.problem_detail %}
+                    <p id="problem_detail_error" class="text-xs text-red-600 font-semibold mt-1">{{ errors.problem_detail }}</p>
+                    {% endif %}
                 </div>
 
                 <div class="flex justify-end gap-3 pt-4 border-t border-slate-200">
@@ -177,17 +249,29 @@
 </div>
 
 <script>
-function fetchUpozillas(district) {
+function fetchUpozillas(district, selectedUpozilla) {
     const sel = document.getElementById('upozillaSelect');
+    if (!district) {
+        sel.innerHTML = '<option value="">-- Select District First --</option>';
+        return;
+    }
     sel.innerHTML = '<option value="">Loading upozillas...</option>';
     fetch('/api/upozillas/?district=' + encodeURIComponent(district))
         .then(r => r.json())
         .then(data => {
             sel.innerHTML = '<option value="">-- Select Upozilla --</option>';
             data.forEach(u => {
-                sel.innerHTML += `<option value="${u.name}">${u.name}</option>`;
+                const isSel = (selectedUpozilla && selectedUpozilla === u.name) ? 'selected' : '';
+                sel.innerHTML += `<option value="${u.name}" ${isSel}>${u.name}</option>`;
             });
         });
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    const zilla = document.getElementById('zillaSelect');
+    if (zilla && zilla.value) {
+        fetchUpozillas(zilla.value, "{{ form_data.upozilla|default:'' }}");
+    }
+});
 </script>
 {% endblock %}
