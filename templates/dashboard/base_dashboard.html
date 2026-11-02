@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block body %}
-<div x-data="{ sidebarOpen: false }" class="flex min-h-screen bg-slate-100">
+<div x-data="{ sidebarOpen: false, accountMenuOpen: false }" class="flex min-h-screen bg-slate-100">
 
     <div x-show="sidebarOpen" x-cloak @click="sidebarOpen = false"
          class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 lg:hidden" aria-hidden="true"></div>
@@ -12,13 +12,13 @@
            class="fixed inset-y-0 left-0 z-50 w-64 bg-slate-900 text-white flex flex-col transition-transform duration-200 ease-in-out">
 
         <div class="p-6 border-b border-slate-800 flex items-center justify-between">
-            <a href="{% url 'home' %}" class="flex items-center gap-3 focus:rounded-lg">
-                <img src="{% static 'images/logo.png' %}" alt="CommunityBridge Official Logo"
+            <a href="{% url 'home' %}?preview=1" class="flex items-center gap-3 focus:rounded-lg">
+                <img src="{% static 'images/logo.png' %}" alt="Veri map Official Logo"
                      class="w-10 h-10 rounded-xl object-contain bg-white p-1"
                      onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                <div style="display:none" class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-violet-600 items-center justify-center font-bold text-lg" aria-hidden="true">CB</div>
+                <div style="display:none" class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-violet-600 items-center justify-center font-bold text-lg" aria-hidden="true">VM</div>
                 <div>
-                    <span class="block text-base font-extrabold tracking-tight text-white">CommunityBridge</span>
+                    <span class="block text-base font-extrabold tracking-tight text-white">Veri map</span>
                     <span class="block text-xs text-slate-400">{% block portal_label %}Portal{% endblock %}</span>
                 </div>
             </a>
@@ -46,7 +46,7 @@
         </nav>
 
         <div class="p-4 border-t border-slate-800">
-            <a href="{% url 'logout' %}" 
+            <a href="{% url 'logout' %}"
                class="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-sm shadow transition">
                 <i data-lucide="log-out" class="w-4 h-4" aria-hidden="true"></i>
                 <span>Logout</span>
@@ -55,29 +55,106 @@
     </aside>
 
     <div class="flex-1 lg:pl-64 flex flex-col min-h-screen">
-        <header class="sticky top-0 z-30 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between shadow-sm">
+        <header class="sticky top-0 z-30 bg-white border-b border-slate-200 px-6 py-3.5 flex items-center justify-between shadow-sm">
             <div class="flex items-center gap-4">
                 <button type="button" @click="sidebarOpen = true" class="lg:hidden p-2 rounded-lg text-slate-600 hover:bg-slate-100" aria-label="Open sidebar menu">
                     <i data-lucide="menu" class="w-6 h-6" aria-hidden="true"></i>
                 </button>
                 <div>
                     <h1 class="text-xl font-extrabold text-slate-900">{% block page_heading %}Dashboard{% endblock %}</h1>
-                    <p class="text-xs text-slate-500">{% block page_subtitle %}Welcome to CommunityBridge{% endblock %}</p>
+                    <p class="text-xs text-slate-500">{% block page_subtitle %}Welcome to Veri map{% endblock %}</p>
                 </div>
             </div>
+
             <div class="flex items-center gap-3">
                 {% block topbar_actions %}{% endblock %}
-                <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 border border-slate-200">
-                    <span class="text-xs font-bold text-slate-800">{{ request.user.name|default:request.user.username }}</span>
-                    <span class="text-[10px] uppercase font-extrabold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">
-                        {{ request.user.user_type|default:"Admin" }}
-                    </span>
+
+                <div class="relative" @keydown.escape.window="accountMenuOpen = false">
+                    <button type="button"
+                            @click="accountMenuOpen = !accountMenuOpen"
+                            :aria-expanded="accountMenuOpen"
+                            aria-haspopup="true"
+                            aria-label="Open account and settings menu"
+                            class="flex items-center gap-2.5 p-1.5 pr-3 rounded-full bg-slate-100 hover:bg-slate-200/80 border border-slate-200 transition">
+                        <span class="w-9 h-9 rounded-full bg-gradient-to-br from-blue-600 to-violet-600 text-white font-extrabold text-sm flex items-center justify-center shadow-sm" aria-hidden="true">
+                            {{ request.user.name|default:request.user.username|slice:":1"|upper }}
+                        </span>
+                        <span class="hidden sm:block text-left">
+                            <span class="block text-xs font-extrabold text-slate-900 leading-tight">{{ request.user.name|default:request.user.username|truncatechars:16 }}</span>
+                            <span class="block text-[10px] font-bold uppercase text-blue-600">{{ request.user.user_type|default:"Admin" }}</span>
+                        </span>
+                        <span class="w-7 h-7 rounded-full bg-white text-slate-700 flex items-center justify-center shadow-xs">
+                            <i data-lucide="more-vertical" class="w-4 h-4" aria-hidden="true"></i>
+                        </span>
+                    </button>
+
+                    <div x-show="accountMenuOpen" x-cloak
+                         @click.away="accountMenuOpen = false"
+                         x-transition:enter="transition ease-out duration-150"
+                         x-transition:enter-start="opacity-0 scale-95 translate-y-1"
+                         x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                         role="menu"
+                         aria-label="Account Settings and Actions"
+                         class="absolute right-0 mt-2.5 w-80 bg-white rounded-3xl shadow-2xl border border-slate-200 p-3 z-50">
+
+                        <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 mb-2 flex items-center gap-3">
+                            <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-600 to-emerald-500 text-white font-extrabold text-lg flex items-center justify-center shrink-0" aria-hidden="true">
+                                {{ request.user.name|default:request.user.username|slice:":1"|upper }}
+                            </div>
+                            <div class="overflow-hidden">
+                                <p class="text-sm font-extrabold text-slate-900 truncate">{{ request.user.name|default:request.user.username }}</p>
+                                <p class="text-xs text-slate-500 truncate">{{ request.user.email }}</p>
+                                <span class="inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase bg-blue-100 text-blue-800">
+                                    Verified {{ request.user.user_type|default:"Admin" }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="space-y-1 py-1">
+                            <a href="{% url 'home' %}?preview=1" role="menuitem"
+                               class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-100 transition">
+                                <span class="flex items-center gap-3">
+                                    <span class="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center"><i data-lucide="globe" class="w-4 h-4" aria-hidden="true"></i></span>
+                                    <span>View Public Homepage</span>
+                                </span>
+                                <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400" aria-hidden="true"></i>
+                            </a>
+
+                            <button type="button" @click="toggleContrast()" role="menuitem"
+                                    class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-100 transition">
+                                <span class="flex items-center gap-3">
+                                    <span class="w-8 h-8 rounded-full bg-violet-50 text-violet-600 flex items-center justify-center"><i data-lucide="contrast" class="w-4 h-4" aria-hidden="true"></i></span>
+                                    <span>High Contrast Mode</span>
+                                </span>
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold"
+                                      :class="highContrast ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-600'"
+                                      x-text="highContrast ? 'ON' : 'OFF'"></span>
+                            </button>
+
+                            <button type="button" @click="toggleLargeText()" role="menuitem"
+                                    class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-100 transition">
+                                <span class="flex items-center gap-3">
+                                    <span class="w-8 h-8 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center"><i data-lucide="type" class="w-4 h-4" aria-hidden="true"></i></span>
+                                    <span>Large Reader Text (A+)</span>
+                                </span>
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold"
+                                      :class="largeText ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-600'"
+                                      x-text="largeText ? 'ON' : 'OFF'"></span>
+                            </button>
+                        </div>
+
+                        <div class="my-2 border-t border-slate-200"></div>
+
+                        <a href="{% url 'logout' %}" role="menuitem"
+                           class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-extrabold text-rose-700 bg-rose-50 hover:bg-rose-100 transition">
+                            <span class="flex items-center gap-3">
+                                <span class="w-8 h-8 rounded-full bg-rose-600 text-white flex items-center justify-center"><i data-lucide="log-out" class="w-4 h-4" aria-hidden="true"></i></span>
+                                <span>Log Out</span>
+                            </span>
+                            <i data-lucide="arrow-right" class="w-4 h-4" aria-hidden="true"></i>
+                        </a>
+                    </div>
                 </div>
-                <a href="{% url 'logout' %}" 
-                   class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow-sm transition">
-                    <i data-lucide="log-out" class="w-3.5 h-3.5" aria-hidden="true"></i>
-                    <span>Logout</span>
-                </a>
             </div>
         </header>
 

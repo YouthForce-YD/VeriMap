@@ -1,8 +1,7 @@
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, re_path
 from django.conf import settings
-from django.conf.urls.static import static
-
+from django.views.static import serve
 from dashboard import views
 
 urlpatterns = [
@@ -11,15 +10,11 @@ urlpatterns = [
     path('login/', views.login_view, name='login'),
     path('register/', views.register_view, name='register'),
     path('logout/', views.logout_view, name='logout'),
-
     path('api/upozillas/', views.get_upozillas_api, name='api_upozillas'),
-
     path('receiver/dashboard/', views.receiver_dashboard, name='receiver_dashboard'),
     path('donor/dashboard/', views.donor_dashboard, name='donor_dashboard'),
     path('donor/payment/<int:demand_id>/', views.payment_view, name='payment'),
     path('donor/receipt/<int:payment_id>/', views.download_donation_receipt, name='download_receipt'),
     path('admin-panel/', views.admin_dashboard, name='admin_dashboard'),
+    re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
 ]
-
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

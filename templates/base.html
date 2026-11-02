@@ -1,41 +1,80 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en" class="scroll-smooth"
+      x-data="{
+          highContrast: localStorage.getItem('vm_contrast') === 'true',
+          largeText: localStorage.getItem('vm_largetext') === 'true',
+          toggleContrast() {
+              this.highContrast = !this.highContrast;
+              localStorage.setItem('vm_contrast', this.highContrast);
+          },
+          toggleLargeText() {
+              this.largeText = !this.largeText;
+              localStorage.setItem('vm_largetext', this.largeText);
+          }
+      }"
+      :class="{ 'large-reader-text': largeText, 'hc-mode': highContrast }">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}CommunityBridge — Connecting Donors with Communities{% endblock %}</title>
+    <title>{% block title %}Veri map — Connecting Donors with Communities{% endblock %}</title>
     <link rel="icon" type="image/png" href="{% static 'images/logo.png' %}">
-
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
-                    colors: {
-                        brand: { 50: '#eff6ff', 100: '#dbeafe', 600: '#2563eb', 700: '#1d4ed8', 900: '#0f172a' }
+        if (typeof tailwind !== 'undefined') {
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+                        colors: {
+                            brand: { 50: '#eff6ff', 100: '#dbeafe', 600: '#2563eb', 700: '#1d4ed8', 900: '#0f172a' }
+                        }
                     }
                 }
-            }
+            };
         }
     </script>
-
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-
     <script src="https://unpkg.com/lucide@latest"></script>
-
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
     <style>
         [x-cloak] { display: none !important; }
         *:focus-visible {
             outline: 3px solid #2563EB !important;
             outline-offset: 2px !important;
+        }
+        html.large-reader-text {
+            font-size: 118% !important;
+        }
+        html.hc-mode body {
+            background-color: #FFFFFF !important;
+            color: #000000 !important;
+        }
+        html.hc-mode article,
+        html.hc-mode header,
+        html.hc-mode table,
+        html.hc-mode input,
+        html.hc-mode select,
+        html.hc-mode textarea {
+            border-color: #0F172A !important;
+            border-width: 2px !important;
+        }
+        html.hc-mode .text-slate-500,
+        html.hc-mode .text-slate-600,
+        html.hc-mode .text-slate-400 {
+            color: #1E293B !important;
+            font-weight: 600 !important;
+        }
+        html.hc-mode *:focus-visible {
+            outline: 4px solid #D97706 !important;
+            outline-offset: 3px !important;
+        }
+        .tilt-card {
+            transform-style: preserve-3d;
+            transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.25s ease;
         }
     </style>
     {% block extra_head %}{% endblock %}
@@ -72,7 +111,9 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            lucide.createIcons();
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
         });
     </script>
     {% block extra_js %}{% endblock %}

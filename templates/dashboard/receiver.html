@@ -1,9 +1,9 @@
 {% extends 'dashboard/base_dashboard.html' %}
 {% load humanize %}
 
-{% block title %}Receiver Dashboard — CommunityBridge{% endblock %}
+{% block title %}Receiver Dashboard — Veri map{% endblock %}
 {% block portal_label %}Receiver Portal{% endblock %}
-{% block page_heading %}{% if tab == 'new' %}My Project Demands{% else %}Funded & Completed Projects{% endif %}{% endblock %}
+{% block page_heading %}{% if tab == 'new' %}My Project Demands{% else %}Funded &amp; Completed Projects{% endif %}{% endblock %}
 {% block page_subtitle %}Submit and manage your community project funding requests{% endblock %}
 
 {% block sidebar_nav %}
@@ -12,7 +12,7 @@
     <span class="px-2 py-0.5 text-xs rounded-full bg-slate-950/40">{{ total_demands }}</span>
 </a>
 <a href="?tab=completed" class="flex items-center justify-between px-4 py-3 rounded-xl text-sm font-semibold transition {% if tab == 'completed' %}bg-blue-600 text-white{% else %}text-slate-300 hover:bg-slate-800{% endif %}">
-    <span class="flex items-center gap-3"><i data-lucide="award" class="w-4 h-4" aria-hidden="true"></i> Funded & Completed</span>
+    <span class="flex items-center gap-3"><i data-lucide="award" class="w-4 h-4" aria-hidden="true"></i> Funded &amp; Completed</span>
     <span class="px-2 py-0.5 text-xs rounded-full bg-slate-950/40">{{ completed_count }}</span>
 </a>
 {% endblock %}
@@ -31,7 +31,7 @@
                 <p class="text-2xl font-extrabold text-slate-900 mt-1">{{ pending_count }}</p>
             </div>
             <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-                <p class="text-xs font-semibold text-emerald-600">Verified & Live</p>
+                <p class="text-xs font-semibold text-emerald-600">Verified &amp; Live</p>
                 <p class="text-2xl font-extrabold text-slate-900 mt-1">{{ verified_count }}</p>
             </div>
             <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
@@ -40,7 +40,8 @@
             </div>
         </div>
 
-        <button type="button" @click="modalOpen = true"
+        <button type="button" x-ref="openModalBtn"
+                @click="modalOpen = true; $nextTick(() => { if ($refs.firstField) $refs.firstField.focus(); })"
                 class="px-6 py-4 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-lg shadow-blue-600/25 flex items-center gap-2 transition">
             <i data-lucide="plus-circle" class="w-5 h-5" aria-hidden="true"></i>
             <span>Submit New Demand</span>
@@ -62,7 +63,7 @@
                     </span>
                 </div>
                 <p class="text-xs text-slate-500 mb-3">{{ d.detail_location }}, {{ d.upozilla }}, {{ d.zilla }}</p>
-                <p class="text-xl font-extrabold text-blue-600 mb-3">৳ {{ d.requested_amount|floatformat:2|intcomma }}</p>
+                <p class="text-xl font-extrabold text-blue-600 mb-3">&#2547; {{ d.requested_amount|floatformat:2|intcomma }}</p>
                 <p class="text-sm text-slate-600 line-clamp-3 mb-4">{{ d.problem_detail }}</p>
             </div>
 
@@ -88,12 +89,26 @@
 
     <div x-show="modalOpen" x-cloak
          role="dialog" aria-modal="true" aria-labelledby="modal-demand-title"
-         @keydown.escape.window="modalOpen = false"
+         @keydown.escape.window="if (modalOpen) { modalOpen = false; $nextTick(() => { if ($refs.openModalBtn) $refs.openModalBtn.focus(); }); }"
          class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-        <div @click.away="modalOpen = false" class="bg-white rounded-3xl shadow-2xl w-full max-w-xl max-h-[90vh] overflow-y-auto p-6 sm:p-8">
+        <div @click.away="modalOpen = false; $nextTick(() => { if ($refs.openModalBtn) $refs.openModalBtn.focus(); })"
+             @keydown.tab="
+                 const focusables = Array.from($el.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex=\'-1\'])')).filter(el => el.offsetParent !== null);
+                 if (!focusables.length) return;
+                 const first = focusables[0];
+                 const last = focusables[focusables.length - 1];
+                 if ($event.shiftKey && document.activeElement === first) {
+                     last.focus();
+                     $event.preventDefault();
+                 } else if (!$event.shiftKey && document.activeElement === last) {
+                     first.focus();
+                     $event.preventDefault();
+                 }
+             "
+             class="bg-white rounded-3xl shadow-2xl w-full max-w-xl max-h-[90vh] overflow-y-auto p-6 sm:p-8">
             <div class="flex items-center justify-between pb-4 border-b border-slate-200 mb-5">
                 <h2 id="modal-demand-title" class="text-xl font-extrabold text-slate-900">Submit New Community Demand</h2>
-                <button type="button" @click="modalOpen = false" aria-label="Close modal" class="p-2 rounded-full hover:bg-slate-100">
+                <button type="button" @click="modalOpen = false; $nextTick(() => { if ($refs.openModalBtn) $refs.openModalBtn.focus(); })" aria-label="Close modal" class="p-2 rounded-full hover:bg-slate-100">
                     <i data-lucide="x" class="w-5 h-5" aria-hidden="true"></i>
                 </button>
             </div>
@@ -119,7 +134,7 @@
                         <label for="zillaSelect" class="block text-xs font-bold text-slate-700 mb-1">
                             District (Zilla) <span class="text-red-600" aria-hidden="true">*</span>
                         </label>
-                        <select id="zillaSelect" name="zilla_name" required onchange="fetchUpozillas(this.value)"
+                        <select id="zillaSelect" x-ref="firstField" name="zilla_name" required onchange="fetchUpozillas(this.value)"
                                 {% if errors.zilla_name %}aria-invalid="true" aria-describedby="zilla_error"{% endif %}
                                 class="w-full px-3.5 py-2.5 rounded-xl border {% if errors.zilla_name %}border-red-500 bg-red-50/30{% else %}border-slate-300{% endif %} text-sm">
                             <option value="">-- Select District --</option>
@@ -198,8 +213,8 @@
                         <input type="number" id="amount_input" name="amount" x-model.number="budget" min="1000" max="50000000" step="0.01" required
                                {% if errors.amount %}aria-invalid="true" aria-describedby="amount_error"{% endif %}
                                class="w-full px-3.5 py-2.5 rounded-xl border {% if errors.amount %}border-red-500 bg-red-50/30{% else %}border-slate-300{% endif %} text-sm">
-                        <p class="text-xs text-slate-500 mt-1" aria-live="polite">
-                            Donor Goal (+10% service fee): <strong class="text-blue-600">৳ <span x-text="(budget * 1.10).toFixed(2)"></span></strong>
+                        <p class="text-xs text-slate-500 mt-1">
+                            Donor Goal (+10% service fee): <strong class="text-blue-600">&#2547; <span x-text="(budget * 1.10).toFixed(2)"></span></strong>
                         </p>
                         {% if errors.amount %}
                         <p id="amount_error" class="text-xs text-red-600 font-semibold mt-1">{{ errors.amount }}</p>
@@ -228,7 +243,7 @@
 
                 <div>
                     <label for="problem_detail" class="block text-xs font-bold text-slate-700 mb-1">
-                        Problem Description & Impact <span class="text-red-600" aria-hidden="true">*</span>
+                        Problem Description &amp; Impact <span class="text-red-600" aria-hidden="true">*</span>
                     </label>
                     <textarea id="problem_detail" name="problem_detail" rows="4" required
                               {% if errors.problem_detail %}aria-invalid="true" aria-describedby="problem_detail_error"{% endif %}
@@ -240,7 +255,7 @@
                 </div>
 
                 <div class="flex justify-end gap-3 pt-4 border-t border-slate-200">
-                    <button type="button" @click="modalOpen = false" class="px-5 py-2.5 rounded-xl bg-slate-100 text-slate-700 text-sm font-semibold">Cancel</button>
+                    <button type="button" @click="modalOpen = false; $nextTick(() => { if ($refs.openModalBtn) $refs.openModalBtn.focus(); })" class="px-5 py-2.5 rounded-xl bg-slate-100 text-slate-700 text-sm font-semibold">Cancel</button>
                     <button type="submit" class="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold">Submit Demand</button>
                 </div>
             </form>
@@ -266,7 +281,6 @@ function fetchUpozillas(district, selectedUpozilla) {
             });
         });
 }
-
 document.addEventListener('DOMContentLoaded', () => {
     const zilla = document.getElementById('zillaSelect');
     if (zilla && zilla.value) {

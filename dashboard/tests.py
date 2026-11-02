@@ -132,6 +132,31 @@ class RegistrationTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertFalse(User.objects.filter(email='badphone@example.com').exists())
 
+    def test_weak_common_password_rejected_on_register_view(self):
+        response = self.client.post(reverse('register'), {
+            'name': 'Weak Pass User',
+            'phone_number': '01712000000',
+            'email': 'weakpass@example.com',
+            'national_id': '1999123456789',
+            'address': 'Dhaka',
+            'password': '123456',
+            'confirm_password': '123456',
+            'user_type': 'donor'
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(User.objects.filter(email='weakpass@example.com').exists())
+
+    def test_user_masked_nid_property(self):
+        user = User(
+            username='masked_nid@example.com',
+            email='masked_nid@example.com',
+            name='Masked NID User',
+            phone_number='01713000000',
+            national_id='1990123456789',
+            user_type='donor'
+        )
+        self.assertEqual(user.masked_nid, '*********6789')
+
 class DemandCreationTestCase(TestCase):
     def setUp(self):
         self.client = Client()
@@ -410,6 +435,12 @@ class PaymentProcessingTestCase(TestCase):
         })
         self.assertEqual(response.status_code, 404)
 
+    def test_receiver_cannot_access_payment_view(self):
+        self.client.login(username='receiver_pay@example.com', password='Password123!')
+        response = self.client.get(reverse('payment', args=[self.demand.id]))
+        self.assertEqual(response.status_code, 302)
+        self.assertIn('/receiver/dashboard/', response.url)
+
 class ProjectProgressTestCase(TestCase):
     def setUp(self):
         self.client = Client()
@@ -579,3 +610,11 @@ class ReceiptPermissionTestCase(TestCase):
         response = self.client.get(reverse('download_receipt', args=[self.payment.id]))
         self.assertEqual(response.status_code, 302)
         self.assertIn(reverse('login'), response.url)
+
+    def test_receipt_escapes_xml_special_characters_in_demand_name(self):
+        self.demand.demand_name = 'Water & <Solar> Tube-Well'
+        self.demand.save()
+        self.client.login(username='donor1_receipt@example.com', password='Password123!')
+        response = self.client.get(reverse('download_receipt', args=[self.payment.id]))
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.content.startswith(b'%PDF'))

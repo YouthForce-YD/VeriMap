@@ -1,7 +1,7 @@
 {% extends 'dashboard/base_dashboard.html' %}
 {% load humanize %}
 
-{% block title %}Admin Dashboard — CommunityBridge{% endblock %}
+{% block title %}Admin Dashboard — Veri map{% endblock %}
 {% block portal_label %}Admin Control Center{% endblock %}
 {% block page_heading %}System Administration{% endblock %}
 {% block page_subtitle %}Verify demands, upload milestone photo proofs, and manage users{% endblock %}
@@ -53,7 +53,7 @@
                 <th scope="col" class="p-4">Project</th>
                 <th scope="col" class="p-4">Receiver</th>
                 <th scope="col" class="p-4">Location</th>
-                <th scope="col" class="p-4">Budget (৳)</th>
+                <th scope="col" class="p-4">Budget (&#2547;)</th>
                 <th scope="col" class="p-4">Photo Proof</th>
                 <th scope="col" class="p-4">Supporting Doc</th>
                 <th scope="col" class="p-4">Status</th>
@@ -66,14 +66,14 @@
                 <td class="p-4 font-bold text-slate-900">{{ d.demand_name }}</td>
                 <td class="p-4">{{ d.receiver.name }}</td>
                 <td class="p-4 text-slate-500">{{ d.upozilla }}, {{ d.zilla }}</td>
-                <td class="p-4 font-bold text-blue-600">৳{{ d.donor_amount|floatformat:0|intcomma }}</td>
+                <td class="p-4 font-bold text-blue-600">&#2547;{{ d.donor_amount|floatformat:0|intcomma }}</td>
                 <td class="p-4">
                     {% if d.problem_image %}
                     <a href="{{ d.problem_image.url }}" target="_blank" rel="noopener noreferrer" class="text-blue-600 font-semibold hover:underline flex items-center gap-1">
                         <i data-lucide="image" class="w-3.5 h-3.5" aria-hidden="true"></i> View Photo
                     </a>
                     {% else %}
-                    <span class="text-slate-400">—</span>
+                    <span class="text-slate-400">&mdash;</span>
                     {% endif %}
                 </td>
                 <td class="p-4">
@@ -82,17 +82,17 @@
                         <i data-lucide="file-text" class="w-3.5 h-3.5" aria-hidden="true"></i> View Doc
                     </a>
                     {% else %}
-                    <span class="text-slate-400">—</span>
+                    <span class="text-slate-400">&mdash;</span>
                     {% endif %}
                 </td>
                 <td class="p-4"><span class="px-2.5 py-1 rounded-full text-xs font-bold capitalize bg-slate-100">{{ d.status }}</span></td>
                 <td class="p-4">
                     {% if d.status == 'pending' %}
                     <div class="flex items-center gap-2">
-                        <form method="POST">{% csrf_token %}<input type="hidden" name="form_type" value="demand_action"><input type="hidden" name="demand_id" value="{{ d.id }}"><input type="hidden" name="action" value="verify"><button type="submit" class="px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-bold">Verify</button></form>
-                        <form method="POST">{% csrf_token %}<input type="hidden" name="form_type" value="demand_action"><input type="hidden" name="demand_id" value="{{ d.id }}"><input type="hidden" name="action" value="cancel"><button type="submit" class="px-3 py-1.5 rounded-lg bg-rose-600 text-white text-xs font-bold">Cancel</button></form>
+                        <form method="POST">{% csrf_token %}<input type="hidden" name="form_type" value="demand_action"><input type="hidden" name="demand_id" value="{{ d.id }}"><input type="hidden" name="action" value="verify"><button type="submit" aria-label="Verify demand: {{ d.demand_name }}" class="px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-bold">Verify</button></form>
+                        <form method="POST">{% csrf_token %}<input type="hidden" name="form_type" value="demand_action"><input type="hidden" name="demand_id" value="{{ d.id }}"><input type="hidden" name="action" value="cancel"><button type="submit" aria-label="Cancel demand: {{ d.demand_name }}" class="px-3 py-1.5 rounded-lg bg-rose-600 text-white text-xs font-bold">Cancel</button></form>
                     </div>
-                    {% else %}—{% endif %}
+                    {% else %}&mdash;{% endif %}
                 </td>
             </tr>
             {% empty %}
@@ -110,7 +110,7 @@
                 <th scope="col" class="p-4">Project</th>
                 <th scope="col" class="p-4">Receiver</th>
                 <th scope="col" class="p-4">Progress</th>
-                <th scope="col" class="p-4">Update Milestone, Note & Photo Proof</th>
+                <th scope="col" class="p-4">Update Milestone, Note &amp; Photo Proof</th>
             </tr>
         </thead>
         <tbody class="divide-y divide-slate-100 text-sm">
@@ -134,7 +134,7 @@
                             <option value="100" {% if p.progress.progress_percent == 100 %}selected{% endif %}>100% (Completed)</option>
                         </select>
                         <input type="text" name="update_note" value="{{ p.progress.update_note|default:'' }}" placeholder="Milestone note..." aria-label="Milestone update note for {{ p.demand_name }}" class="px-3 py-1.5 rounded-lg border border-slate-300 text-xs w-48">
-                        <input type="file" name="proof_image" accept="image/*" aria-label="Upload milestone photo proof" class="text-xs">
+                        <input type="file" name="proof_image" accept=".jpg,.jpeg,.png,.webp" aria-label="Upload milestone photo proof" class="text-xs">
                         <button type="submit" class="px-4 py-1.5 rounded-lg bg-violet-600 text-white text-xs font-bold">Update</button>
                     </form>
                     {% else %}
@@ -167,7 +167,7 @@
                 <td class="p-4 font-bold text-slate-900">{{ u.name|default:u.username }}</td>
                 <td class="p-4 text-slate-600">{{ u.email }}</td>
                 <td class="p-4 font-semibold text-slate-800">{{ u.phone_number|default:u.phone|default:"—" }}</td>
-                <td class="p-4 font-mono text-xs text-slate-600">{{ u.national_id|default:"—" }}</td>
+                <td class="p-4 font-mono text-xs text-slate-600">{{ u.masked_nid }}</td>
                 <td class="p-4 text-slate-600">{{ u.address|default:"—" }}</td>
             </tr>
             {% empty %}
@@ -195,7 +195,7 @@
                 <td class="p-4 font-bold text-slate-900">{{ u.name|default:u.username }}</td>
                 <td class="p-4 text-slate-600">{{ u.email }}</td>
                 <td class="p-4 font-semibold text-slate-800">{{ u.phone_number|default:u.phone|default:"—" }}</td>
-                <td class="p-4 font-mono text-xs text-slate-600">{{ u.national_id|default:"—" }}</td>
+                <td class="p-4 font-mono text-xs text-slate-600">{{ u.masked_nid }}</td>
                 <td class="p-4 text-slate-600">{{ u.address|default:"—" }}</td>
             </tr>
             {% empty %}

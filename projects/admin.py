@@ -1,6 +1,5 @@
 from django.contrib import admin
 from .models import Demand, ProjectProgress
-# Register your models here.
 
 @admin.register(Demand)
 class DemandAdmin(admin.ModelAdmin):
@@ -12,4 +11,3 @@ class DemandAdmin(admin.ModelAdmin):
 class ProjectProgressAdmin(admin.ModelAdmin):
     list_display = ('demand', 'progress_percent', 'last_updated')
     list_filter = ('progress_percent',)
-

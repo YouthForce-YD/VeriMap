@@ -2,68 +2,95 @@
 {% load static humanize %}
 
 {% block body %}
-<!-- Accessible Public Header -->
 <header class="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-200">
     <nav aria-label="Main Public Navigation" class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
         <a href="{% url 'home' %}" class="flex items-center gap-3">
-            <img src="{% static 'images/logo.png' %}" alt="CommunityBridge Official Logo"
+            <img src="{% static 'images/logo.png' %}" alt="Veri map Official Logo"
                  class="w-10 h-10 rounded-xl object-contain"
                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-            <div style="display:none" class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-violet-600 text-white items-center justify-center font-extrabold" aria-hidden="true">CB</div>
-            <span class="text-xl font-extrabold tracking-tight text-slate-900">CommunityBridge</span>
+            <div style="display:none" class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-violet-600 text-white items-center justify-center font-extrabold" aria-hidden="true">VM</div>
+            <span class="text-xl font-extrabold tracking-tight text-slate-900">Veri map</span>
         </a>
+
         <div class="flex items-center gap-3">
+            {% if request.user.is_authenticated %}
+            <div x-data="{ navMenu: false }" class="relative">
+                <button type="button" @click="navMenu = !navMenu" :aria-expanded="navMenu"
+                        aria-label="Open user menu"
+                        class="flex items-center gap-2.5 p-1.5 pr-3 rounded-full bg-slate-100 hover:bg-slate-200 border border-slate-200 transition">
+                    <span class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 to-violet-600 text-white font-bold text-xs flex items-center justify-center">
+                        {{ request.user.name|default:request.user.username|slice:":1"|upper }}
+                    </span>
+                    <span class="text-xs font-extrabold text-slate-800">{{ request.user.name|default:request.user.username|truncatechars:14 }}</span>
+                    <i data-lucide="more-vertical" class="w-4 h-4 text-slate-600" aria-hidden="true"></i>
+                </button>
+                <div x-show="navMenu" x-cloak @click.away="navMenu = false"
+                     class="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-2xl border border-slate-200 p-2.5 z-50 space-y-1">
+                    <a href="{% url 'home' %}" class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 transition">
+                        <i data-lucide="layout-dashboard" class="w-4 h-4" aria-hidden="true"></i>
+                        <span>Return to My Dashboard</span>
+                    </a>
+                    <a href="{% url 'logout' %}" class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-bold text-rose-700 hover:bg-rose-50 transition">
+                        <i data-lucide="log-out" class="w-4 h-4" aria-hidden="true"></i>
+                        <span>Log Out</span>
+                    </a>
+                </div>
+            </div>
+            {% else %}
             <a href="{% url 'login' %}" class="px-4 py-2 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-100 transition">Sign In</a>
             <a href="{% url 'register' %}" class="px-5 py-2.5 rounded-xl text-sm font-bold bg-blue-600 text-white hover:bg-blue-700 shadow-md shadow-blue-600/20 transition">Register</a>
+            {% endif %}
         </div>
     </nav>
 </header>
 
 <main id="main-content" tabindex="-1">
-    <!-- Hero Section with Decorative 3D Canvas hidden from Screen Readers -->
-    <section class="relative bg-slate-900 text-white py-24 px-6 overflow-hidden isolate" aria-labelledby="hero-heading">
-        <div id="three-hero-bg" class="absolute inset-0 -z-10 pointer-events-none" aria-hidden="true"></div>
-        <div class="max-w-3xl mx-auto text-center relative z-10">
-            <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-500/15 border border-blue-400/30 text-blue-300 text-xs font-semibold mb-6">
-                <i data-lucide="shield-check" class="w-4 h-4" aria-hidden="true"></i>
+    <section class="relative bg-slate-950 text-white py-24 sm:py-28 px-6 overflow-hidden isolate" aria-labelledby="hero-heading">
+        <div id="three-hero-bg" class="absolute inset-0 pointer-events-none overflow-hidden" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1;" aria-hidden="true"></div>
+        <div class="absolute inset-0 bg-gradient-to-b from-slate-950/30 via-transparent to-slate-950/85 pointer-events-none" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2;" aria-hidden="true"></div>
+
+        <div class="max-w-4xl mx-auto text-center relative" style="position: relative; z-index: 10;">
+            <span class="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-blue-500/15 border border-blue-400/30 text-blue-300 text-xs font-semibold mb-6">
+                <span class="relative flex h-2 w-2">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
                 Serving Communities Across All 64 Districts of Bangladesh
             </span>
             <h1 id="hero-heading" class="text-4xl sm:text-6xl font-extrabold tracking-tight leading-tight mb-6">
-                Bridging Donors with <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-violet-400">Community Needs</span>
+                Bridging Donors with <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-emerald-300 to-violet-400">Community Needs</span>
             </h1>
-            <p class="text-lg text-slate-300 leading-relaxed mb-10">
+            <p class="text-lg text-slate-300 leading-relaxed mb-10 max-w-2xl mx-auto">
                 A transparent platform connecting generous donors with admin-verified community projects across all 64 districts and 500+ upozillas of Bangladesh.
             </p>
             <div class="flex flex-wrap justify-center gap-4">
-                <a href="{% url 'register' %}?type=donor" class="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 text-white font-bold shadow-lg shadow-blue-600/30 hover:-translate-y-0.5 transition">
+                <a href="{% url 'register' %}?type=donor" class="inline-flex items-center gap-2 px-8 py-4 rounded-2xl bg-gradient-to-r from-blue-600 to-violet-600 text-white font-bold shadow-lg shadow-blue-600/30 hover:-translate-y-0.5 transition">
                     <i data-lucide="heart-handshake" class="w-5 h-5" aria-hidden="true"></i>
                     <span>I Want to Donate</span>
                 </a>
-                <a href="{% url 'register' %}?type=receiver" class="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-white/10 border border-white/20 text-white font-bold hover:bg-white/20 transition">
+                <a href="{% url 'register' %}?type=receiver" class="inline-flex items-center gap-2 px-8 py-4 rounded-2xl bg-white/10 border border-white/20 text-white font-bold hover:bg-white/20 transition">
                     <i data-lucide="file-plus-2" class="w-5 h-5" aria-hidden="true"></i>
                     <span>Submit a Project</span>
                 </a>
             </div>
 
-            <!-- Live Platform Statistics -->
-            <dl class="grid grid-cols-3 gap-6 max-w-lg mx-auto mt-14 pt-8 border-t border-white/10">
-                <div>
-                    <dt class="text-xs text-slate-400">Live Verified Projects</dt>
-                    <dd class="text-3xl font-extrabold text-blue-400 mt-1">{{ total_demands }}</dd>
+            <dl class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 max-w-3xl mx-auto mt-14">
+                <div class="rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 p-6 shadow-xl transition-all duration-300 hover:bg-white/10 hover:border-blue-500/40 hover:-translate-y-1">
+                    <dt class="text-xs text-slate-400 font-semibold uppercase tracking-wider">Live Verified Projects</dt>
+                    <dd class="text-3xl sm:text-4xl font-extrabold text-blue-400 mt-2">{{ total_demands }}</dd>
                 </div>
-                <div>
-                    <dt class="text-xs text-slate-400">Registered Donors</dt>
-                    <dd class="text-3xl font-extrabold text-emerald-400 mt-1">{{ total_donors }}+</dd>
+                <div class="rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 p-6 shadow-xl transition-all duration-300 hover:bg-white/10 hover:border-emerald-500/40 hover:-translate-y-1">
+                    <dt class="text-xs text-slate-400 font-semibold uppercase tracking-wider">Registered Donors</dt>
+                    <dd class="text-3xl sm:text-4xl font-extrabold text-emerald-400 mt-2">{{ total_donors }}+</dd>
                 </div>
-                <div>
-                    <dt class="text-xs text-slate-400">Projects Funded</dt>
-                    <dd class="text-3xl font-extrabold text-violet-400 mt-1">{{ total_paid }}</dd>
+                <div class="rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 p-6 shadow-xl transition-all duration-300 hover:bg-white/10 hover:border-violet-500/40 hover:-translate-y-1">
+                    <dt class="text-xs text-slate-400 font-semibold uppercase tracking-wider">Projects Funded</dt>
+                    <dd class="text-3xl sm:text-4xl font-extrabold text-violet-400 mt-2">{{ total_paid }}</dd>
                 </div>
             </dl>
         </div>
     </section>
 
-    <!-- Public Showcase of Verified Projects -->
     <section class="py-20 px-6 max-w-7xl mx-auto" aria-labelledby="live-projects-heading">
         <div class="text-center max-w-2xl mx-auto mb-12">
             <h2 id="live-projects-heading" class="text-3xl font-extrabold text-slate-900">Live Verified Community Projects</h2>
@@ -71,12 +98,13 @@
         </div>
 
         {% if live_projects %}
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
             {% for p in live_projects %}
-            <article class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition p-6 flex flex-col justify-between">
+            <article onmousemove="handleCardTilt(event, this)" onmouseleave="resetCardTilt(this)"
+                     class="tilt-card bg-white rounded-3xl border border-slate-200 shadow-sm hover:shadow-xl p-6 flex flex-col justify-between">
                 <div>
                     {% if p.problem_image %}
-                    <img src="{{ p.problem_image.url }}" alt="Field photo for {{ p.demand_name }}" class="w-full h-44 object-cover rounded-xl mb-4">
+                    <img src="{{ p.problem_image.url }}" alt="Field photo for {{ p.demand_name }}" class="w-full h-44 object-cover rounded-2xl mb-4">
                     {% endif %}
                     <div class="flex items-center justify-between gap-2 mb-3">
                         <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
@@ -84,7 +112,7 @@
                         </span>
                         <time datetime="{{ p.created_at|date:'Y-m-d' }}" class="text-xs text-slate-500">{{ p.created_at|date:"d M Y" }}</time>
                     </div>
-                    <h3 class="text-lg font-bold text-slate-900 mb-1">{{ p.demand_name }}</h3>
+                    <h3 class="text-lg font-extrabold text-slate-900 mb-1">{{ p.demand_name }}</h3>
                     <p class="text-xs text-slate-500 flex items-center gap-1 mb-4">
                         <i data-lucide="map-pin" class="w-3.5 h-3.5 text-blue-600" aria-hidden="true"></i>
                         <span>{{ p.upozilla }}, {{ p.zilla }}</span>
@@ -93,10 +121,10 @@
                 </div>
 
                 <div>
-                    <div class="mb-4">
-                        <div class="flex justify-between text-xs font-semibold text-slate-600 mb-1">
-                            <span>Raised: ৳{{ p.collected_amount|floatformat:0|intcomma }}</span>
-                            <span>Goal: ৳{{ p.donor_amount|floatformat:0|intcomma }}</span>
+                    <div class="mb-4 p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80">
+                        <div class="flex justify-between text-xs font-bold text-slate-700 mb-1.5">
+                            <span>Raised: &#2547;{{ p.collected_amount|floatformat:0|intcomma }}</span>
+                            <span>Goal: &#2547;{{ p.donor_amount|floatformat:0|intcomma }}</span>
                         </div>
                         <div class="w-full h-2.5 bg-slate-200 rounded-full overflow-hidden"
                              role="progressbar" aria-label="Funding progress for {{ p.demand_name }}"
@@ -104,7 +132,7 @@
                             <div class="h-full bg-gradient-to-r from-blue-600 to-emerald-500 rounded-full" style="width: {{ p.funding_percentage }}%"></div>
                         </div>
                     </div>
-                    <a href="{% url 'login' %}" class="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm transition">
+                    <a href="{% url 'payment' p.id %}" class="w-full inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm transition">
                         <i data-lucide="heart" class="w-4 h-4" aria-hidden="true"></i>
                         <span>Donate to Project</span>
                     </a>
@@ -121,38 +149,322 @@
 </main>
 
 <footer class="bg-slate-900 text-slate-400 text-center py-8 text-sm mt-auto">
-    <p>© 2026 CommunityBridge — Connecting Bangladesh's Communities</p>
+    <p>&copy; 2026 Veri map &mdash; Connecting Bangladesh's Communities</p>
 </footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
-(function () {
-    const container = document.getElementById('three-hero-bg');
-    if (!container || typeof THREE === 'undefined') return;
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 1000);
-    camera.position.z = 75;
-    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-    renderer.setSize(container.clientWidth, container.clientHeight);
-    container.appendChild(renderer.domElement);
-    const group = new THREE.Group();
-    scene.add(group);
-    const geo = new THREE.BufferGeometry();
-    const pts = new Float32Array(130 * 3);
-    for (let i = 0; i < 130; i++) {
-        const theta = Math.random() * Math.PI * 2, phi = Math.acos((Math.random() * 2) - 1), r = 42;
-        pts[i*3] = r * Math.sin(phi) * Math.cos(theta);
-        pts[i*3+1] = r * Math.sin(phi) * Math.sin(theta);
-        pts[i*3+2] = r * Math.cos(phi);
+function handleCardTilt(e, card) {
+    if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        return;
     }
-    geo.setAttribute('position', new THREE.BufferAttribute(pts, 3));
-    group.add(new THREE.Points(geo, new THREE.PointsMaterial({ color: '#60A5FA', size: 1.5 })));
+    const rect = card.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const rotateY = ((x / rect.width) - 0.5) * 12;
+    const rotateX = ((0.5 - (y / rect.height))) * 12;
+    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-5px)`;
+}
+function resetCardTilt(card) {
+    card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0px)';
+}
+
+function runCanvasFallback(container, isVisibleRef) {
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const canvas = document.createElement('canvas');
+    canvas.style.position = 'absolute';
+    canvas.style.top = '0';
+    canvas.style.left = '0';
+    canvas.style.width = '100%';
+    canvas.style.height = '100%';
+    canvas.style.pointerEvents = 'none';
+    container.appendChild(canvas);
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let width = 0;
+    let height = 0;
+    function resize() {
+        width = canvas.width = container.clientWidth || window.innerWidth;
+        height = canvas.height = container.clientHeight || 560;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    const nodeCount = 110;
+    const radius = Math.min(width, height) * 0.32 || 140;
+    const nodes = [];
+    for (let i = 0; i < nodeCount; i++) {
+        const phi = Math.acos(-1 + (2 * i) / nodeCount);
+        const theta = Math.sqrt(nodeCount * Math.PI) * phi;
+        nodes.push({
+            x: radius * Math.cos(theta) * Math.sin(phi),
+            y: radius * Math.sin(theta) * Math.sin(phi),
+            z: radius * Math.cos(phi),
+            isBeacon: i % 5 === 0
+        });
+    }
+
+    let rotY = 0;
+    let rotX = 0;
+    let targetRotX = 0;
+    let targetRotY = 0;
+    let tick = 0;
+
+    window.addEventListener('mousemove', (e) => {
+        targetRotX = (e.clientY / window.innerHeight - 0.5) * 0.35;
+        targetRotY = (e.clientX / window.innerWidth - 0.5) * 0.35;
+    });
+
+    function drawFrame() {
+        if (width === 0 || height === 0 || (container.clientHeight > 0 && Math.abs(height - container.clientHeight) > 2)) {
+            resize();
+        }
+        ctx.clearRect(0, 0, width, height);
+        rotY += 0.0028;
+        rotX += (targetRotX - rotX) * 0.05;
+        tick += 0.02;
+
+        const cx = width / 2;
+        const cy = height / 2;
+        const fov = 420;
+        const cosY = Math.cos(rotY + targetRotY);
+        const sinY = Math.sin(rotY + targetRotY);
+        const cosX = Math.cos(rotX);
+        const sinX = Math.sin(rotX);
+
+        const projected = [];
+        for (let i = 0; i < nodeCount; i++) {
+            const n = nodes[i];
+            const x1 = n.x * cosY - n.z * sinY;
+            const z1 = n.z * cosY + n.x * sinY;
+            const y2 = n.y * cosX - z1 * sinX;
+            const z2 = z1 * cosX + n.y * sinX;
+            const scale = fov / (fov + z2 + radius * 1.5);
+            projected.push({
+                px: cx + x1 * scale,
+                py: cy + y2 * scale,
+                pz: z2,
+                scale: scale,
+                isBeacon: n.isBeacon
+            });
+        }
+
+        for (let i = 0; i < nodeCount; i++) {
+            for (let j = i + 1; j < nodeCount; j++) {
+                const dx = projected[i].px - projected[j].px;
+                const dy = projected[i].py - projected[j].py;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < 60) {
+                    const alpha = (1 - dist / 60) * 0.28;
+                    ctx.strokeStyle = 'rgba(59, 130, 246, ' + alpha + ')';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(projected[i].px, projected[i].py);
+                    ctx.lineTo(projected[j].px, projected[j].py);
+                    ctx.stroke();
+                }
+            }
+        }
+
+        const ringSegments = 64;
+        const ringRadius = radius * 1.35;
+        ctx.beginPath();
+        for (let i = 0; i <= ringSegments; i++) {
+            const ang = (i / ringSegments) * Math.PI * 2;
+            const rx = Math.cos(ang) * ringRadius;
+            const ry = Math.sin(ang) * ringRadius * 0.32;
+            const rx1 = rx * cosY;
+            const rpx = cx + rx1 * 0.9;
+            const rpy = cy + ry + (rx1 * sinX * 0.4);
+            if (i === 0) ctx.moveTo(rpx, rpy);
+            else ctx.lineTo(rpx, rpy);
+        }
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.35)';
+        ctx.lineWidth = 1.3;
+        ctx.stroke();
+
+        for (let i = 0; i < nodeCount; i++) {
+            const p = projected[i];
+            const size = Math.max(1, (p.isBeacon ? 4.2 : 2.0) * p.scale);
+            ctx.beginPath();
+            ctx.arc(p.px, p.py, size, 0, Math.PI * 2);
+            if (p.isBeacon) {
+                const pulse = 0.8 + Math.sin(tick * 3) * 0.2;
+                ctx.fillStyle = 'rgba(52, 211, 153, ' + pulse + ')';
+            } else {
+                ctx.fillStyle = 'rgba(96, 165, 250, 0.9)';
+            }
+            ctx.fill();
+        }
+    }
+
+    if (prefersReducedMotion) {
+        drawFrame();
+        return;
+    }
+
     function animate() {
         requestAnimationFrame(animate);
-        group.rotation.y += 0.0018;
-        renderer.render(scene, camera);
+        if (!isVisibleRef.isHeroVisible || document.hidden) return;
+        drawFrame();
     }
     animate();
-})();
+}
+
+function startHeroAnimation() {
+    const container = document.getElementById('three-hero-bg');
+    if (!container) return;
+    if (container.dataset.initialized === 'true') return;
+    container.dataset.initialized = 'true';
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const visibilityState = { isHeroVisible: true };
+
+    if ('IntersectionObserver' in window) {
+        const observer = new IntersectionObserver((entries) => {
+            if (entries[0]) {
+                visibilityState.isHeroVisible = entries[0].isIntersecting;
+            }
+        }, { threshold: 0.05 });
+        observer.observe(container);
+    }
+
+    if (typeof THREE !== 'undefined') {
+        const scene = new THREE.Scene();
+        let w = container.clientWidth || window.innerWidth;
+        let h = container.clientHeight || 560;
+
+        const camera = new THREE.PerspectiveCamera(55, w / h, 0.1, 1000);
+        camera.position.z = 86;
+
+        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        renderer.setSize(w, h);
+        renderer.domElement.style.position = 'absolute';
+        renderer.domElement.style.top = '0';
+        renderer.domElement.style.left = '0';
+        renderer.domElement.style.width = '100%';
+        renderer.domElement.style.height = '100%';
+        renderer.domElement.style.pointerEvents = 'none';
+        container.appendChild(renderer.domElement);
+
+        const globeGroup = new THREE.Group();
+        scene.add(globeGroup);
+
+        const nodeCount = 150;
+        const radius = 38;
+        const positions = [];
+        const nodeCoords = new Float32Array(nodeCount * 3);
+        const glowCoords = [];
+
+        for (let i = 0; i < nodeCount; i++) {
+            const phi = Math.acos(-1 + (2 * i) / nodeCount);
+            const theta = Math.sqrt(nodeCount * Math.PI) * phi;
+            const x = radius * Math.cos(theta) * Math.sin(phi);
+            const y = radius * Math.sin(theta) * Math.sin(phi);
+            const z = radius * Math.cos(phi);
+            positions.push(new THREE.Vector3(x, y, z));
+            nodeCoords[i * 3] = x;
+            nodeCoords[i * 3 + 1] = y;
+            nodeCoords[i * 3 + 2] = z;
+            if (i % 5 === 0) {
+                glowCoords.push(x * 1.03, y * 1.03, z * 1.03);
+            }
+        }
+
+        const nodeGeo = new THREE.BufferGeometry();
+        nodeGeo.setAttribute('position', new THREE.BufferAttribute(nodeCoords, 3));
+        const nodeMat = new THREE.PointsMaterial({ color: '#60A5FA', size: 2.2, transparent: true, opacity: 0.9 });
+        globeGroup.add(new THREE.Points(nodeGeo, nodeMat));
+
+        const glowGeo = new THREE.BufferGeometry();
+        glowGeo.setAttribute('position', new THREE.Float32BufferAttribute(glowCoords, 3));
+        const glowMat = new THREE.PointsMaterial({ color: '#34D399', size: 4.2, transparent: true, opacity: 0.95 });
+        const glowPoints = new THREE.Points(glowGeo, glowMat);
+        globeGroup.add(glowPoints);
+
+        const lineCoords = [];
+        for (let i = 0; i < nodeCount; i++) {
+            for (let j = i + 1; j < nodeCount; j++) {
+                if (positions[i].distanceTo(positions[j]) < 14) {
+                    lineCoords.push(positions[i].x, positions[i].y, positions[i].z, positions[j].x, positions[j].y, positions[j].z);
+                }
+            }
+        }
+        const lineGeo = new THREE.BufferGeometry();
+        lineGeo.setAttribute('position', new THREE.Float32BufferAttribute(lineCoords, 3));
+        const lineMat = new THREE.LineBasicMaterial({ color: '#3B82F6', transparent: true, opacity: 0.28 });
+        globeGroup.add(new THREE.LineSegments(lineGeo, lineMat));
+
+        const ringGeo = new THREE.BufferGeometry();
+        const ringPts = [];
+        const ringSegments = 120;
+        for (let i = 0; i <= ringSegments; i++) {
+            const theta = (i / ringSegments) * Math.PI * 2;
+            ringPts.push(Math.cos(theta) * 52, Math.sin(theta) * 52, 0);
+        }
+        ringGeo.setAttribute('position', new THREE.Float32BufferAttribute(ringPts, 3));
+        const ringMat = new THREE.LineBasicMaterial({ color: '#38BDF8', transparent: true, opacity: 0.45 });
+        const ring = new THREE.Line(ringGeo, ringMat);
+        ring.rotation.x = Math.PI * 0.35;
+        ring.rotation.y = Math.PI * 0.15;
+        globeGroup.add(ring);
+
+        let mouseX = 0;
+        let mouseY = 0;
+        let targetX = 0;
+        let targetY = 0;
+
+        window.addEventListener('mousemove', (e) => {
+            targetX = (e.clientX / window.innerWidth - 0.5) * 0.4;
+            targetY = (e.clientY / window.innerHeight - 0.5) * 0.4;
+        });
+
+        function resizeThree() {
+            if (!container) return;
+            const newW = container.clientWidth || window.innerWidth;
+            const newH = container.clientHeight || 560;
+            camera.aspect = newW / newH;
+            camera.updateProjectionMatrix();
+            renderer.setSize(newW, newH);
+        }
+        window.addEventListener('resize', resizeThree);
+
+        if (prefersReducedMotion) {
+            renderer.render(scene, camera);
+            return;
+        }
+
+        let tick = 0;
+        function animate() {
+            requestAnimationFrame(animate);
+            if (!visibilityState.isHeroVisible || document.hidden) return;
+            if (container.clientHeight > 0 && Math.abs(renderer.domElement.clientHeight - container.clientHeight) > 2) {
+                resizeThree();
+            }
+            tick += 0.012;
+            mouseX += (targetX - mouseX) * 0.05;
+            mouseY += (targetY - mouseY) * 0.05;
+            globeGroup.rotation.y += 0.0022;
+            globeGroup.rotation.x = mouseY * 0.4;
+            globeGroup.position.x = mouseX * 8;
+            globeGroup.position.y = -mouseY * 8;
+            ring.rotation.z += 0.001;
+            glowMat.size = 3.8 + Math.sin(tick * 3) * 0.9;
+            renderer.render(scene, camera);
+        }
+        animate();
+    } else {
+        runCanvasFallback(container, visibilityState);
+    }
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', startHeroAnimation);
+} else {
+    startHeroAnimation();
+}
+window.addEventListener('load', startHeroAnimation);
 </script>
 {% endblock %}

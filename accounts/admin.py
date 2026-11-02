@@ -9,5 +9,5 @@ class CustomUserAdmin(UserAdmin):
     search_fields = ('email', 'name', 'phone_number', 'national_id')
     ordering = ('created_at',)
     fieldsets = UserAdmin.fieldsets + (
-        ('CommunityBridge Profile', {'fields': ('name', 'phone_number', 'national_id', 'address', 'user_type')}),
+        ('Veri map Profile', {'fields': ('name', 'phone_number', 'national_id', 'address', 'user_type')}),
     )

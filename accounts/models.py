@@ -25,6 +25,7 @@ class User(AbstractUser):
     address = models.CharField(max_length=255, null=True, blank=True)
     user_type = models.CharField(max_length=15, choices=USER_TYPE_CHOICES, default='donor')
     created_at = models.DateTimeField(auto_now_add=True)
+
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username', 'name']
 
@@ -35,6 +36,15 @@ class User(AbstractUser):
     @phone.setter
     def phone(self, value):
         self.phone_number = value
+
+    @property
+    def masked_nid(self):
+        if not self.national_id:
+            return "—"
+        nid_str = str(self.national_id)
+        if len(nid_str) <= 4:
+            return nid_str
+        return f"{'*' * (len(nid_str) - 4)}{nid_str[-4:]}"
 
     def save(self, *args, **kwargs):
         if self.is_superuser:

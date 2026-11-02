@@ -1,7 +1,7 @@
 {% extends 'dashboard/base_dashboard.html' %}
 {% load humanize %}
 
-{% block title %}Donate to {{ demand.demand_name }} — CommunityBridge{% endblock %}
+{% block title %}Donate to {{ demand.demand_name }} — Veri map{% endblock %}
 {% block portal_label %}Donor Checkout{% endblock %}
 {% block page_heading %}Secure Project Donation{% endblock %}
 {% block page_subtitle %}Powered by SSLCommerz Architecture{% endblock %}
@@ -16,7 +16,7 @@
 <div class="max-w-lg mx-auto bg-white rounded-3xl border border-slate-200 shadow-lg p-8">
     <div class="bg-gradient-to-br from-blue-700 to-violet-700 text-white rounded-2xl p-6 text-center mb-6">
         <p class="text-xs uppercase tracking-wider opacity-80">Remaining Target Needed</p>
-        <p class="text-4xl font-extrabold my-2">৳ {{ demand.remaining_amount|floatformat:2|intcomma }}</p>
+        <p class="text-4xl font-extrabold my-2">&#2547; {{ demand.remaining_amount|floatformat:2|intcomma }}</p>
         <p class="text-xs opacity-80">{{ demand.demand_name }} ({{ demand.upozilla }}, {{ demand.zilla }})</p>
     </div>
 
@@ -29,7 +29,7 @@
             <input type="number" id="pay_amount" name="amount" value="{{ demand.remaining_amount }}"
                    min="100" max="{{ demand.remaining_amount }}" step="0.01" required
                    class="w-full px-4 py-3 rounded-xl border border-slate-300 text-base font-bold text-blue-700">
-            <p class="text-xs text-slate-500 mt-1">You can fund the entire remaining budget or contribute any partial amount (min. ৳100).</p>
+            <p class="text-xs text-slate-500 mt-1">You can fund the entire remaining budget or contribute any partial amount (min. &#2547;100).</p>
         </div>
 
         <div>
@@ -44,7 +44,7 @@
 
         <button type="submit" class="w-full py-4 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-sm shadow-lg shadow-emerald-600/25 transition flex items-center justify-center gap-2">
             <i data-lucide="shield-check" class="w-5 h-5" aria-hidden="true"></i>
-            <span>Confirm & Complete Donation</span>
+            <span>Confirm &amp; Complete Donation</span>
         </button>
     </form>
 </div>
