@@ -20,8 +20,8 @@
 {% block dashboard_content %}
 <div x-data="{ modalOpen: {% if modal_open %}true{% else %}false{% endif %}, budget: {{ form_data.amount|default:0 }} }">
 
-    <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 w-full lg:w-auto flex-1">
+    <div class="flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-4 mb-6">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 w-full xl:w-auto flex-1">
             <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
                 <p class="text-xs font-semibold text-slate-500">Total Submitted</p>
                 <p class="text-2xl font-extrabold text-slate-900 mt-1">{{ total_demands }}</p>
@@ -42,7 +42,7 @@
 
         <button type="button" x-ref="openModalBtn"
                 @click="modalOpen = true; $nextTick(() => { if ($refs.firstField) $refs.firstField.focus(); })"
-                class="px-6 py-4 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-lg shadow-blue-600/25 flex items-center gap-2 transition">
+                class="px-6 py-4 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-lg shadow-blue-600/25 flex items-center justify-center gap-2 transition w-full sm:w-auto shrink-0">
             <i data-lucide="plus-circle" class="w-5 h-5" aria-hidden="true"></i>
             <span>Submit New Demand</span>
         </button>

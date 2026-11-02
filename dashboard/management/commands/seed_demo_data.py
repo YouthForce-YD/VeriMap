@@ -1,6 +1,6 @@
 import io
 from decimal import Decimal
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFont
 from django.core.files.base import ContentFile
 from django.core.management.base import BaseCommand
 from reportlab.lib import colors
@@ -14,20 +14,31 @@ from projects.models import Demand, ProjectProgress
 def generate_banner_png(title, location, badge_text, bg_hex):
     img = Image.new('RGB', (800, 450), color=bg_hex)
     draw = ImageDraw.Draw(img)
-    draw.rectangle([24, 24, 776, 426], outline='#60A5FA', width=3)
-    draw.rectangle([48, 48, 310, 92], fill='#10B981')
-    draw.text((64, 62), badge_text.upper(), fill='#FFFFFF')
-    draw.text((48, 140), "VERI MAP VERIFIED FIELD RECORD", fill='#93C5FD')
-    if len(title) <= 45:
-        draw.text((48, 185), title, fill='#FFFFFF')
+
+    badge_font = ImageFont.load_default(size=22)
+    label_font = ImageFont.load_default(size=18)
+    title_font = ImageFont.load_default(size=32)
+    meta_font = ImageFont.load_default(size=20)
+
+    draw.rectangle([20, 20, 780, 430], outline='#3B82F6', width=3)
+    draw.rectangle([48, 44, 340, 96], fill='#10B981')
+    draw.text((64, 57), badge_text.upper(), font=badge_font, fill='#FFFFFF')
+    draw.rectangle([48, 116, 752, 120], fill='#3B82F6')
+    draw.text((48, 138), "VERI MAP VERIFIED FIELD RECORD", font=label_font, fill='#93C5FD')
+
+    if len(title) <= 36:
+        draw.text((48, 185), title, font=title_font, fill='#FFFFFF')
     else:
-        split_idx = title.rfind(' ', 0, 45)
+        split_idx = title.rfind(' ', 0, 36)
         if split_idx == -1:
-            split_idx = 45
-        draw.text((48, 185), title[:split_idx].strip(), fill='#FFFFFF')
-        draw.text((48, 215), title[split_idx:].strip(), fill='#FFFFFF')
-    draw.text((48, 275), f"Location: {location}", fill='#CBD5E1')
-    draw.text((48, 360), "Veri map Bangladesh - Verified Field Inspection", fill='#64748B')
+            split_idx = 36
+        draw.text((48, 180), title[:split_idx].strip(), font=title_font, fill='#FFFFFF')
+        draw.text((48, 225), title[split_idx:].strip(), font=title_font, fill='#FFFFFF')
+
+    draw.text((48, 285), f"Location: {location}", font=meta_font, fill='#CBD5E1')
+    draw.rectangle([48, 345, 752, 347], fill='#334155')
+    draw.text((48, 370), "Veri map Bangladesh - Verified Field Inspection", font=meta_font, fill='#94A3B8')
+
     buf = io.BytesIO()
     img.save(buf, format='PNG')
     return buf.getvalue()
@@ -224,6 +235,30 @@ class Command(BaseCommand):
                         'amount_paid': Decimal('44000.00'),
                         'payment_method': 'bkash',
                         'payment_gateway_ref': 'CB-SUNAM-001',
+                        'payment_status': 'success',
+                    }
+                ],
+                'progress': None,
+            },
+            {
+                'slug': 'kurigram_solar_pump',
+                'bg': '#0F766E',
+                'receiver': receivers['momena.kurigram@receiver.bd'],
+                'zilla': 'Kurigram',
+                'upozilla': 'Kurigram Sadar',
+                'detail_location': 'Panchgachhi Union, Kurigram Sadar',
+                'demand_name': 'Solar Irrigation Pump for Smallholder Farmers',
+                'problem_detail': 'High diesel costs make irrigation unaffordable for 80 smallholder vegetable farming families. Installing a centralized solar irrigation pump will cut farming costs and ensure year-round crop yields.',
+                'contact_no': '01933445566',
+                'requested_amount': Decimal('90000.00'),
+                'collected_amount': Decimal('25000.00'),
+                'status': 'verified',
+                'payments': [
+                    {
+                        'donor': donors['farhan.chowdhury@donor.bd'],
+                        'amount_paid': Decimal('25000.00'),
+                        'payment_method': 'bkash',
+                        'payment_gateway_ref': 'CB-KUR-001',
                         'payment_status': 'success',
                     }
                 ],
